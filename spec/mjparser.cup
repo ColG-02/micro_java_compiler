@@ -1,0 +1,346 @@
+package rs.ac.bg.etf.pp1;
+
+import java_cup.runtime.*;
+import org.apache.log4j.*;
+import rs.ac.bg.etf.pp1.ast.*;
+
+parser code {:
+
+    boolean errorDetected = false;
+    Logger log = Logger.getLogger(getClass());
+
+    // slede redefinisani metodi za prijavu gresaka radi izmene teksta poruke
+
+    public void report_fatal_error(String message, Object info) throws java.lang.Exception {
+      done_parsing();
+      report_error(message, info);
+    }
+
+    public void syntax_error(Symbol cur_token) {
+        report_error("\nSintaksna greska", cur_token);
+    }
+
+    public void unrecovered_syntax_error(Symbol cur_token) throws java.lang.Exception {
+        report_fatal_error("Fatalna greska, parsiranje se ne moze nastaviti", cur_token);
+    }
+
+    public void report_error(String message, Object info) {
+    	errorDetected = true;
+    	StringBuilder msg = new StringBuilder(message);
+    	if (info instanceof Symbol)
+            msg.append (" na liniji ").append(((Symbol)info).left);
+        log.error(msg.toString());
+    }
+:}
+
+scan with {:
+	Symbol s = this.getScanner().next_token();
+	if (s != null && s.value != null)
+		log.info(s.toString() + " " + s.value.toString());
+	return s;
+:}
+
+
+terminal PROG, BREAK, ENUM, ELSE, CONST, IF, NEW, PRINT, READ, RETURN, VOID, CONTINUE, FOR, LENGTH, SWITCH, CASE;
+terminal PLUS, MINUS, MUL, DIV, MOD, INC, DEC, ASSIGN, AND, OR;
+terminal EQUALS, NOTEQUAL, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL;
+terminal SEMI, COLON, COMMA, DOT, QUESTION, LPARENT, RPARENT, LBRACE, RBRACE, LBRACKET, RBRACKET;
+
+
+terminal Integer NUMBER;
+terminal Character CHAR;
+terminal Boolean BOOL;
+terminal String IDENT;
+
+
+nonterminal Program, ProgramName, ConstVarEnumDeclList, ConstDecl, VarDecl, EnumDecl, MethodDeclList, MethodDecl;                       // Program
+nonterminal ConstDeclSingle, ConstDeclMore, Type, Constant, VarDeclSingle, VarDeclMore, EnumDeclSingle, EnumDeclMore;                   // ConstDecl, VarDecl, EnumDecl
+nonterminal MethRetAndName, MethodName, FormParOpt, VarDeclList, StatementList, FormPars, Statement, FormParSingle, FormParMore;        // MethodDecl, FormPars
+nonterminal DesignatorStatement, Condition, Designator, ElseStmt, Expr, CaseList, Case, DesignatorStatementOpt, ConditionOpt;           // Statement
+nonterminal Assignop, ActParsOpt, ActPars, ActParSingle, ActParMore, CondTermList, CondTerm, CondFactList, CondFact;                    // DesignatorStatement, ActPars, Condition, CondTerm, CondFact
+nonterminal Term, AddopTermList, Addop, Relop, RelExpr, SimpleExpr, MulopFactorList, Mulop, Factor, Unary, FactorSub;                   // Expr, Term, Factor
+nonterminal DesignatorArrayName, DesignatorArrayList, DesignatorArraySub;                                                               // Designator
+
+
+precedence left ELSE;
+
+// Program
+
+Program ::= (Program) PROG ProgramName ConstVarEnumDeclList LBRACE MethodDeclList RBRACE;
+
+ProgramName ::= (ProgramName) IDENT;
+
+ConstVarEnumDeclList ::= (ConstVarEnumDeclList_c) ConstVarEnumDeclList ConstDecl
+                         |
+                         (ConstVarEnumDeclList_v) ConstVarEnumDeclList VarDecl
+                         |
+                         (ConstVarEnumDeclList_n) ConstVarEnumDeclList EnumDecl
+                         |
+                         (ConstVarEnumDeclList_e) /*epsilon*/;
+
+MethodDeclList ::= (MethodDeclList_met) MethodDeclList MethodDecl
+                   |
+                   (MethodDeclList_e) /*epsilon*/;
+
+// ConstDecl
+
+ConstDecl ::= (ConstDecl) CONST Type ConstDeclSingle ConstDeclMore SEMI;
+
+ConstDeclSingle ::= (ConstDeclSingle) IDENT ASSIGN Constant;
+
+ConstDeclMore ::= (ConstDeclMore_comma) COMMA ConstDeclSingle ConstDeclMore
+				|
+				(ConDeclMore_e) /* epsilon */;
+
+Constant ::= 	(Constant_n) NUMBER
+				|
+				(Constant_c) CHAR
+				|
+				(Constant_b) BOOL;
+
+// VarDecl
+
+VarDecl ::= (VarDecl) Type VarDeclSingle VarDeclMore SEMI ;
+
+VarDeclSingle ::= (VarDeclSingle_var) IDENT
+			|
+			(VarDeclSingle_array) IDENT LBRACKET RBRACKET;
+
+VarDeclMore ::= (VarDeclMore_comma) COMMA VarDeclSingle VarDeclMore
+				|
+				(VarDeclMore_e) /* epsilon */;
+
+// EnumDecl
+
+EnumDecl ::= (EnumDecl) ENUM IDENT LBRACE EnumDeclSingle EnumDeclMore RBRACE;
+
+EnumDeclSingle ::= (EnumDeclSingle_num) IDENT ASSIGN NUMBER
+                   |
+                   (EnumDeclSingle_ident) IDENT;
+
+EnumDeclMore ::= (EnumDeclMore_comma) COMMA EnumDeclSingle EnumDeclMore
+                 |
+                 (EnumDeclMore_e) /* epsilon */;
+
+
+// MethodDecl
+
+MethodDecl ::= (MethodDecl) MethRetAndName LPARENT FormParOpt RPARENT VarDeclList LBRACE StatementList RBRACE;
+
+MethRetAndName ::= 	(MethRetAndName_type) Type MethodName
+					|
+					(MethRetAndName_void) VOID MethodName;
+
+MethodName ::= (MethodName) IDENT;
+
+FormParOpt ::= (FormParOpt_pars) FormPars
+               |
+               (FormParOpt_e) /* epsilon */;
+
+VarDeclList ::= (VarDeclList_var) VarDeclList VarDecl
+                |
+                (VarDeclList_e) /*epsilon*/;
+
+StatementList ::= (StatementList_stmt) StatementList Statement
+                  |
+                  (StatementList_e) /*epsilon*/;
+
+
+// FormPars
+
+FormPars ::= (FormPars_list) FormParSingle FormParMore;
+
+FormParMore ::= (FormParMore_comma) COMMA FormParSingle FormParMore
+				|
+				(FormParMore_e) /* epsilon */;
+
+FormParSingle ::= (FormParSingle_var) Type IDENT
+			      |
+			      (FormParSingle_array) Type IDENT LBRACKET RBRACKET;
+
+// Type
+
+Type ::= (Type) IDENT;
+
+
+// Statement
+
+Statement ::= (Statement_ds) DesignatorStatement SEMI
+			  |
+			  (Statement_if) IF LPARENT Condition RPARENT Statement ElseStmt
+	       	  |
+			  (Statement_break) BREAK SEMI
+			  |
+			  (Statement_continue) CONTINUE SEMI
+			  |
+			  (Statement_return1) RETURN SEMI
+			  |
+			  (Statement_return2) RETURN Expr SEMI
+			  |
+			  (Statement_read) READ LPARENT Designator RPARENT SEMI
+			  |
+			  (Statement_print1) PRINT LPARENT Expr RPARENT SEMI
+			  |
+			  (Statement_print2) PRINT LPARENT Expr COMMA NUMBER RPARENT SEMI
+			  |
+			  (Statement_switch) SWITCH LPARENT Expr RPARENT LBRACE CaseList RBRACE
+              |
+              (Statement_for) FOR LPARENT DesignatorStatementOpt SEMI ConditionOpt SEMI DesignatorStatementOpt RPARENT Statement
+              |
+              (Statement_list) LBRACE StatementList RBRACE;
+
+ElseStmt ::= (ElseStmt_yes) ELSE Statement
+			 |
+			 (ElseStmt_no) /* epsilon */;
+
+CaseList ::= (CaseList_case) CaseList Case
+             |
+             (CaseList_e) /*epsilon*/;
+
+Case ::= (Case) CASE NUMBER COLON StatementList;
+
+DesignatorStatementOpt ::= (DesignatorStatementOpt_stmt) DesignatorStatement
+                           |
+                           (DesignatorStatementOpt_e) /* epsilon */;
+
+ConditionOpt ::= (ConditionOpt_cond) Condition
+                 |
+                 (ConditionOpt_e) /* epsilon */;
+
+// DesignatorStatement
+
+DesignatorStatement ::= (DesignatorStatement_assign) Designator Assignop Expr
+						|
+						(DesignatorStatement_meth) Designator LPARENT ActParsOpt RPARENT
+						|
+						(DesignatorStatement_inc) Designator INC
+						|
+						(DesignatorStatement_dec) Designator DEC;
+
+ActParsOpt ::= (ActParsOpt_pars) ActPars
+               |
+               (ActParsOpt_e) /* epsilon */;
+
+// ActPars
+
+ActPars ::= (ActPars_list) ActParSingle ActParMore;
+
+ActParMore ::= (ActParMore_comma) COMMA ActParSingle ActParMore
+			   |
+			   (ActParMore_e) /* epsilon */;
+
+ActParSingle ::= (ActParSingle) Expr;
+
+// Condition
+
+Condition ::= (Condition) CondTermList;
+
+CondTermList ::= (CondTermList_or) CondTermList OR CondTerm
+			   	 |
+				 (CondTermList_ct) CondTerm;
+
+// CondTerm
+
+CondTerm ::= (CondTerm) CondFactList;
+
+CondFactList ::= (CondFactList_and) CondFactList AND CondFact
+				 |
+				 (CondFactList_cf) CondFact;
+
+// CondFact
+
+CondFact ::= (CondFact_expr) SimpleExpr
+             |
+             (CondFact_rel)  SimpleExpr Relop SimpleExpr;
+
+// Expr
+
+Expr ::= (Expr_base) SimpleExpr
+         |
+         (Expr_cond) Condition QUESTION Expr COLON Expr;
+
+SimpleExpr ::= (SimpleExpr_base) RelExpr
+             |
+             (SimpleExpr_minus) MINUS RelExpr;
+
+
+RelExpr ::= (RelExpr_add) AddopTermList;
+
+AddopTermList ::= (AddopTermList_add) AddopTermList Addop Term
+				  |
+				  (AddopTermList_term) Term;
+
+// Term
+
+Term ::= (Term) MulopFactorList;
+
+MulopFactorList ::= (MulopFactorList_mul) MulopFactorList Mulop Factor
+					|
+					(MulopFactorList_factor) Factor;
+
+Factor ::= (Factor) FactorSub;
+
+
+// Factor
+
+FactorSub ::= (FactorSub_var) Designator
+			  |
+			  (FactorSub_emp) Designator LPARENT RPARENT
+			  |
+			  (FactorSub_meth) Designator LPARENT ActPars RPARENT
+		   	  |
+		   	  (FactorSub_n) NUMBER
+		   	  |
+		   	  (FactorSub_c) CHAR
+		      |
+		   	  (FactorSub_b) BOOL
+		   	  |
+		   	  (FactorSub_new_array) NEW Type LBRACKET Expr RBRACKET
+		   	  |
+		   	  (FactorSub_new) NEW Type
+		   	  |
+		   	  (FactorSub_expr) LPARENT Expr RPARENT;
+
+// Designator
+
+Designator ::= 	(Designator_var) IDENT
+				|
+				(Designator_elem) DesignatorArrayName DesignatorArrayList;
+
+DesignatorArrayName ::= (DesignatorArrayName) IDENT;
+
+DesignatorArrayList ::= (DesignatorArrayList_more) DesignatorArrayList DesignatorArraySub
+                              |
+                              (DesignatorArrayList_sub) DesignatorArraySub;
+
+DesignatorArraySub ::= (DesignatorArraySub_ident) DOT IDENT
+                       |
+                       (DesignatorArraySub_len) DOT LENGTH
+                       |
+                       (DesignatorArraySub_expr) LBRACKET Expr RBRACKET;
+
+// Operators
+
+Assignop ::= (Assignop) ASSIGN;
+
+Relop::= (Relop_eq) EQUALS
+         |
+         (Relop_ne) NOTEQUAL
+         |
+         (Relop_gt) GREATER
+         |
+         (Relop_ge) GREATER_EQUAL
+         |
+         (Relop_lt) LESS
+         |
+         (Relop_le) LESS_EQUAL;
+
+Addop ::= (Addop_plus) PLUS
+		  |
+		  (Addop_minus) MINUS;
+
+Mulop ::= (Mulop_mul) MUL
+		  |
+		  (Mulop_div) DIV
+		  |
+		  (Mulop_rem) MOD;

@@ -1,0 +1,51 @@
+### IntelliJ IDEA ###
+out/
+build/
+target/
+bin/
+!**/src/main/**/out/
+!**/src/test/**/out/
+.kotlin
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### IntelliJ IDEA ###
+.idea/
+*.iml
+*.ipr
+*.iws
+
+### Logs ###
+logs/
+*.log
+
+### Java compiled artifacts ###
+*.class
+
+### JFlex / CUP generated files ###
+src/**/Yylex.java
+src/**/MJParser.java
+src/**/sym.java
+
+### Generated AST nodes ###
+src/**/ast/*.java
