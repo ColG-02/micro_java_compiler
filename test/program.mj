@@ -1,8 +1,10 @@
 // komentar pre programa
 program ColG
+
+const int pi = false, g = 11;
+
 {
 	void main() {
-	    if(niz[2] == 4 || verify()) print(ord('A'));
-        else print(ord('a'));
+
 	}
 }

@@ -49,7 +49,7 @@ terminal SEMI, COLON, COMMA, DOT, QUESTION, LPARENT, RPARENT, LBRACE, RBRACE, LB
 
 terminal Integer NUMBER;
 terminal Character CHAR;
-terminal Boolean BOOL;
+terminal Integer BOOL;
 terminal String IDENT;
 
 

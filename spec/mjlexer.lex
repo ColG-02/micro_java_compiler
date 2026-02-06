@@ -97,7 +97,7 @@ import java_cup.runtime.Symbol;
 
 
 ([0-9])+ 							{ return new_symbol(sym.NUMBER, new Integer (yytext())); }
-("true"|"false")					{ return new_symbol(sym.BOOL, yytext().equals("true") ? Boolean.TRUE : Boolean.FALSE); }
+("true"|"false")					{ return new_symbol(sym.BOOL, yytext().equals("true") ? 1 : 0); }
 "'"."'"								{ return new_symbol(sym.CHAR, new Character (yytext().charAt(1))); }
 ([a-z]|[A-Z])[a-z|A-Z|0-9|_]* 		{ return new_symbol (sym.IDENT, yytext()); }
 
