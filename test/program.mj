@@ -1,10 +1,11 @@
 // komentar pre programa
 program ColG
 
-const int pi = false, g = 11;
-
+const int pi = 3, g = 11;
+char x, y[];
+const bool t = true;
 {
-	void main() {
+	void main() int a, b[]; int x[], y; char eol;{
 
 	}
 }

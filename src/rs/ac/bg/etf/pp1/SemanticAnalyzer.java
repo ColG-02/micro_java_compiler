@@ -17,6 +17,8 @@ public class SemanticAnalyzer extends VisitorAdaptor {
 	private int constant;
     private Struct constantType;
     private Struct boolType = Tab.find("bool").getType();
+    private Obj currentMethod;
+    private boolean mainHappend = false;
 
 	
 	public void report_error(String message, SyntaxNode info) {
@@ -43,7 +45,7 @@ public class SemanticAnalyzer extends VisitorAdaptor {
 	}
 	
 	
-	// KOD SEMANTICKOG ANALIZATORA
+	// Semantic Pass
 	@Override
 	public void visit(ProgramName programName) {
 		currentProgram = Tab.insert(Obj.Prog, programName.getI1(), Tab.noType);
@@ -54,8 +56,11 @@ public class SemanticAnalyzer extends VisitorAdaptor {
 	public void visit(Program program) {
 		Tab.chainLocalSymbols(currentProgram);
 		Tab.closeScope();
+        currentProgram = null;
+        if(!mainHappend) report_error("Program nema main metodu", program);
 	}
-	
+
+    // Const Declarations
 	@Override
 	public void visit(ConstDeclSingle constDeclSingle) {
         Obj conObj = Tab.find(constDeclSingle.getI1());
@@ -91,7 +96,50 @@ public class SemanticAnalyzer extends VisitorAdaptor {
         constantType = boolType;
     }
 	
-	
+	// Var Declarations
+    @Override
+    public void visit(VarDeclSingle_var varDeclSingle){
+        Obj varObj = null;
+        if(currentMethod == null) varObj = Tab.find(varDeclSingle.getI1());
+        else varObj = Tab.currentScope.findSymbol(varDeclSingle.getI1());
+
+        if(varObj == null || varObj == Tab.noObj){
+            varObj = Tab.insert(Obj.Var, varDeclSingle.getI1(), currentType);
+        }
+        else{
+            report_error("Dvostruka definicija promenljive: " + varDeclSingle.getI1(), varDeclSingle);
+        }
+    }
+
+    @Override
+    public void visit(VarDeclSingle_array varDeclArray){
+        Obj varObj = null;
+        if(currentMethod == null) varObj = Tab.find(varDeclArray.getI1());
+        else varObj = Tab.currentScope.findSymbol(varDeclArray.getI1());
+        if(varObj == null  || varObj == Tab.noObj){
+            varObj = Tab.insert(Obj.Var, varDeclArray.getI1(), new Struct(Struct.Array, currentType));
+        }
+        else{
+            report_error("Dvostruka definicija promenljive: " + varDeclArray.getI1(), varDeclArray);
+        }
+    }
+
+    // Method Declarations    -   TODO
+    @Override
+    public void visit(MethodName methodName){
+        if(methodName.getI1().equalsIgnoreCase("main")) mainHappend = true;
+        currentMethod = Tab.insert(Obj.Meth, methodName.getI1(), Tab.noType);
+        Tab.openScope();
+    }
+
+    @Override
+    public void visit(MethodDecl methodDecl){
+        Tab.chainLocalSymbols(currentMethod);
+        Tab.closeScope();
+        currentMethod = null;
+    }
+
+
 	@Override
 	public void visit(Type type) {
 		Obj typeObj = Tab.find(type.getI1());
@@ -107,7 +155,7 @@ public class SemanticAnalyzer extends VisitorAdaptor {
 			currentType = typeObj.getType();
 		}
 	}
-	
-	
+
+
 	
 }
