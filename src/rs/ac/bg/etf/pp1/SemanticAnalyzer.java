@@ -18,7 +18,7 @@ public class SemanticAnalyzer extends VisitorAdaptor {
     private Struct constantType;
     private Struct boolType = Tab.find("bool").getType();
     private Obj currentMethod;
-    private boolean mainHappend = false;
+    private Obj mainMethod = null;
 
 	
 	public void report_error(String message, SyntaxNode info) {
@@ -57,7 +57,7 @@ public class SemanticAnalyzer extends VisitorAdaptor {
 		Tab.chainLocalSymbols(currentProgram);
 		Tab.closeScope();
         currentProgram = null;
-        if(!mainHappend) report_error("Program nema main metodu", program);
+        if(mainMethod == null || mainMethod.getLevel() > 0) report_error("Program nema adekvatnu main metodu", program);
 	}
 
     // Const Declarations
@@ -126,9 +126,16 @@ public class SemanticAnalyzer extends VisitorAdaptor {
 
     // Method Declarations    -   TODO
     @Override
-    public void visit(MethodName methodName){
-        if(methodName.getI1().equalsIgnoreCase("main")) mainHappend = true;
-        currentMethod = Tab.insert(Obj.Meth, methodName.getI1(), Tab.noType);
+    public void visit(MethRetAndName_void methodNameVoid){
+        currentMethod = Tab.insert(Obj.Meth, methodNameVoid.getI1(), Tab.noType);
+        Tab.openScope();
+
+        if(methodNameVoid.getI1().equalsIgnoreCase("main")) mainMethod = currentMethod;
+    }
+
+    @Override
+    public void visit(MethRetAndName_type methodNameType){
+        currentMethod = Tab.insert(Obj.Meth, methodNameType.getI2(), currentType);
         Tab.openScope();
     }
 
@@ -137,6 +144,39 @@ public class SemanticAnalyzer extends VisitorAdaptor {
         Tab.chainLocalSymbols(currentMethod);
         Tab.closeScope();
         currentMethod = null;
+    }
+
+    //ForPar Declarations
+    @Override
+    public void visit(FormParSingle_var  formParSingle){
+        Obj varObj = null;
+        if(currentMethod == null) report_error("Semanticka grska. [FormParSingle_var]", formParSingle);
+        else varObj = Tab.currentScope.findSymbol(formParSingle.getI2());
+
+        if(varObj == null || varObj == Tab.noObj){
+            varObj = Tab.insert(Obj.Var, formParSingle.getI2(), currentType);
+            varObj.setFpPos(1);
+            currentMethod.setLevel(currentMethod.getLevel() + 1);
+        }
+        else{
+            report_error("Dvostruka definicija formalnog parametra: " + formParSingle.getI2(), formParSingle);
+        }
+    }
+
+    @Override
+    public void visit(FormParSingle_array  formParArray){
+        Obj varObj = null;
+        if(currentMethod == null) report_error("Semanticka grska. [FormParSingle_var]", formParArray);
+        else varObj = Tab.currentScope.findSymbol(formParArray.getI2());
+
+        if(varObj == null || varObj == Tab.noObj){
+            varObj = Tab.insert(Obj.Var, formParArray.getI2(), new Struct(Struct.Array, currentType));
+            varObj.setFpPos(1);
+            currentMethod.setLevel(currentMethod.getLevel() + 1);
+        }
+        else{
+            report_error("Dvostruka definicija formalnog parametra: " + formParArray.getI2(), formParArray);
+        }
     }
 
 

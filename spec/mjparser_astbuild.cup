@@ -70,14 +70,13 @@ nonterminal VarDeclMore VarDeclMore;
 nonterminal EnumDeclSingle EnumDeclSingle;
 nonterminal EnumDeclMore EnumDeclMore;                   // ConstDecl, VarDecl, EnumDecl
 nonterminal MethRetAndName MethRetAndName;
-nonterminal MethodName MethodName;
 nonterminal FormParOpt FormParOpt;
 nonterminal VarDeclList VarDeclList;
 nonterminal StatementList StatementList;
 nonterminal FormPars FormPars;
 nonterminal Statement Statement;
 nonterminal FormParSingle FormParSingle;
-nonterminal FormParMore FormParMore;        // MethodDecl, FormPars
+nonterminal FormParMore FormParMore;                    // MethodDecl, FormPars
 nonterminal DesignatorStatement DesignatorStatement;
 nonterminal Condition Condition;
 nonterminal Designator Designator;
@@ -177,11 +176,9 @@ EnumDeclMore ::= (EnumDeclMore_comma) COMMA EnumDeclSingle:E1 EnumDeclMore:E2 {:
 
 MethodDecl ::= (MethodDecl) MethRetAndName:M1 LPARENT FormParOpt:F2 RPARENT VarDeclList:V3 LBRACE StatementList:S4 RBRACE {: RESULT=new MethodDecl(M1, F2, V3, S4); RESULT.setLine(M1left); :};
 
-MethRetAndName ::= 	(MethRetAndName_type) Type:T1 MethodName:M2 {: RESULT=new MethRetAndName_type(T1, M2); RESULT.setLine(T1left); :}
+MethRetAndName ::= 	(MethRetAndName_type) Type:T1 IDENT:I2 {: RESULT=new MethRetAndName_type(T1, I2); RESULT.setLine(T1left); :}
 					|
-					(MethRetAndName_void) VOID MethodName:M1 {: RESULT=new MethRetAndName_void(M1); RESULT.setLine(M1left); :};
-
-MethodName ::= (MethodName) IDENT:I1 {: RESULT=new MethodName(I1); RESULT.setLine(I1left); :};
+					(MethRetAndName_void) VOID IDENT:I1 {: RESULT=new MethRetAndName_void(I1); RESULT.setLine(I1left); :};
 
 FormParOpt ::= (FormParOpt_pars) FormPars:F1 {: RESULT=new FormParOpt_pars(F1); RESULT.setLine(F1left); :}
                |

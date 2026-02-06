@@ -55,7 +55,7 @@ terminal String IDENT;
 
 nonterminal Program, ProgramName, ConstVarEnumDeclList, ConstDecl, VarDecl, EnumDecl, MethodDeclList, MethodDecl;                       // Program
 nonterminal ConstDeclSingle, ConstDeclMore, Type, Constant, VarDeclSingle, VarDeclMore, EnumDeclSingle, EnumDeclMore;                   // ConstDecl, VarDecl, EnumDecl
-nonterminal MethRetAndName, MethodName, FormParOpt, VarDeclList, StatementList, FormPars, Statement, FormParSingle, FormParMore;        // MethodDecl, FormPars
+nonterminal MethRetAndName, FormParOpt, VarDeclList, StatementList, FormPars, Statement, FormParSingle, FormParMore;                    // MethodDecl, FormPars
 nonterminal DesignatorStatement, Condition, Designator, ElseStmt, Expr, CaseList, Case, DesignatorStatementOpt, ConditionOpt;           // Statement
 nonterminal Assignop, ActParsOpt, ActPars, ActParSingle, ActParMore, CondTermList, CondTerm, CondFactList, CondFact;                    // DesignatorStatement, ActPars, Condition, CondTerm, CondFact
 nonterminal Term, AddopTermList, Addop, Relop, RelExpr, SimpleExpr, MulopFactorList, Mulop, Factor, Unary, FactorSub;                   // Expr, Term, Factor
@@ -127,11 +127,9 @@ EnumDeclMore ::= (EnumDeclMore_comma) COMMA EnumDeclSingle EnumDeclMore
 
 MethodDecl ::= (MethodDecl) MethRetAndName LPARENT FormParOpt RPARENT VarDeclList LBRACE StatementList RBRACE;
 
-MethRetAndName ::= 	(MethRetAndName_type) Type MethodName
+MethRetAndName ::= 	(MethRetAndName_type) Type IDENT
 					|
-					(MethRetAndName_void) VOID MethodName;
-
-MethodName ::= (MethodName) IDENT;
+					(MethRetAndName_void) VOID IDENT;
 
 FormParOpt ::= (FormParOpt_pars) FormPars
                |

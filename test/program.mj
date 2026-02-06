@@ -8,4 +8,10 @@ const bool t = true;
 	void main() int a, b[]; int x[], y; char eol;{
 
 	}
+
+	bool m1(int fp1, char fp2[], bool fp3) int a, b[]; int x[], y; char eol;{
+
+    }
+
+
 }
