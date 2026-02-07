@@ -67,8 +67,9 @@ nonterminal Type Type;
 nonterminal Constant Constant;
 nonterminal VarDeclSingle VarDeclSingle;
 nonterminal VarDeclMore VarDeclMore;
+nonterminal EnumDeclName EnumDeclName;
 nonterminal EnumDeclSingle EnumDeclSingle;
-nonterminal EnumDeclMore EnumDeclMore;                   // ConstDecl, VarDecl, EnumDecl
+nonterminal EnumDeclMore EnumDeclMore;     // ConstDecl, VarDecl, EnumDecl
 nonterminal MethRetAndName MethRetAndName;
 nonterminal FormParOpt FormParOpt;
 nonterminal VarDeclList VarDeclList;
@@ -161,7 +162,9 @@ VarDeclMore ::= (VarDeclMore_comma) COMMA VarDeclSingle:V1 VarDeclMore:V2 {: RES
 
 // EnumDecl
 
-EnumDecl ::= (EnumDecl) ENUM IDENT:I1 LBRACE EnumDeclSingle:E2 EnumDeclMore:E3 RBRACE {: RESULT=new EnumDecl(I1, E2, E3); RESULT.setLine(I1left); :};
+EnumDecl ::= (EnumDecl) EnumDeclName:E1 LBRACE EnumDeclSingle:E2 EnumDeclMore:E3 RBRACE {: RESULT=new EnumDecl(E1, E2, E3); RESULT.setLine(E1left); :};
+
+EnumDeclName ::= (EnumDeclName) ENUM IDENT:I1 {: RESULT=new EnumDeclName(I1); RESULT.setLine(I1left); :};
 
 EnumDeclSingle ::= (EnumDeclSingle_num) IDENT:I1 ASSIGN NUMBER:N2 {: RESULT=new EnumDeclSingle_num(I1, N2); RESULT.setLine(I1left); :}
                    |

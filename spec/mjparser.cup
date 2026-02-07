@@ -54,7 +54,7 @@ terminal String IDENT;
 
 
 nonterminal Program, ProgramName, ConstVarEnumDeclList, ConstDecl, VarDecl, EnumDecl, MethodDeclList, MethodDecl;                       // Program
-nonterminal ConstDeclSingle, ConstDeclMore, Type, Constant, VarDeclSingle, VarDeclMore, EnumDeclSingle, EnumDeclMore;                   // ConstDecl, VarDecl, EnumDecl
+nonterminal ConstDeclSingle, ConstDeclMore, Type, Constant, VarDeclSingle, VarDeclMore, EnumDeclName, EnumDeclSingle, EnumDeclMore;     // ConstDecl, VarDecl, EnumDecl
 nonterminal MethRetAndName, FormParOpt, VarDeclList, StatementList, FormPars, Statement, FormParSingle, FormParMore;                    // MethodDecl, FormPars
 nonterminal DesignatorStatement, Condition, Designator, ElseStmt, Expr, CaseList, Case, DesignatorStatementOpt, ConditionOpt;           // Statement
 nonterminal Assignop, ActParsOpt, ActPars, ActParSingle, ActParMore, CondTermList, CondTerm, CondFactList, CondFact;                    // DesignatorStatement, ActPars, Condition, CondTerm, CondFact
@@ -112,7 +112,9 @@ VarDeclMore ::= (VarDeclMore_comma) COMMA VarDeclSingle VarDeclMore
 
 // EnumDecl
 
-EnumDecl ::= (EnumDecl) ENUM IDENT LBRACE EnumDeclSingle EnumDeclMore RBRACE;
+EnumDecl ::= (EnumDecl) EnumDeclName LBRACE EnumDeclSingle EnumDeclMore RBRACE;
+
+EnumDeclName ::= (EnumDeclName) ENUM IDENT;
 
 EnumDeclSingle ::= (EnumDeclSingle_num) IDENT ASSIGN NUMBER
                    |

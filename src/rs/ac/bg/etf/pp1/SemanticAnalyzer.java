@@ -19,6 +19,7 @@ public class SemanticAnalyzer extends VisitorAdaptor {
     private Struct boolType = Tab.find("bool").getType();
     private Obj currentMethod;
     private Obj mainMethod = null;
+    private Struct currentEnum = null;
 
 	
 	public void report_error(String message, SyntaxNode info) {
@@ -45,7 +46,7 @@ public class SemanticAnalyzer extends VisitorAdaptor {
 	}
 	
 	
-	// Semantic Pass
+	// Semantic Analysis
 	@Override
 	public void visit(ProgramName programName) {
 		currentProgram = Tab.insert(Obj.Prog, programName.getI1(), Tab.noType);
@@ -123,8 +124,52 @@ public class SemanticAnalyzer extends VisitorAdaptor {
             report_error("Dvostruka definicija promenljive: " + varDeclArray.getI1(), varDeclArray);
         }
     }
+    // Enum Declarations
+    @Override
+    public void visit(EnumDeclName enumDeclName) {
+        Obj enumObj = Tab.find(enumDeclName.getI1());
+        if(enumObj != Tab.noObj){
+            report_error("Dvostruka definicija nabrajanja: " + enumDeclName.getI1(), enumDeclName);
+        }
+        else{
+            currentEnum = new Struct(Struct.Enum);
+            enumObj = Tab.insert(Obj.Type, enumDeclName.getI1(), currentEnum);
+            Tab.openScope();
+        }
+    }
 
-    // Method Declarations    -   TODO
+    @Override
+    public void visit(EnumDeclSingle_num enumDeclSingleNum) {
+        Obj enumObj = Tab.currentScope.findSymbol(enumDeclSingleNum.getI1());
+        if(enumObj == null || enumObj == Tab.noObj){
+            enumObj = Tab.insert(Obj.Elem, enumDeclSingleNum.getI1(), Tab.intType);
+            enumObj.setLevel(2);
+        }
+        else{
+            report_error("Dvostruka definicija pri nabrajanju: " + enumDeclSingleNum.getI1(), enumDeclSingleNum);
+        }
+    }
+
+    @Override
+    public void visit(EnumDeclSingle_ident enumDeclSingleIdent) {
+        Obj enumObj = Tab.currentScope.findSymbol(enumDeclSingleIdent.getI1());
+        if(enumObj == null || enumObj == Tab.noObj){
+            enumObj = Tab.insert(Obj.Elem, enumDeclSingleIdent.getI1(), Tab.intType);
+            enumObj.setLevel(2);
+        }
+        else{
+            report_error("Dvostruka definicija pri nabrajanju: " + enumDeclSingleIdent.getI1(), enumDeclSingleIdent);
+        }
+    }
+
+    @Override
+    public void visit(EnumDecl enumDecl) {
+        Tab.chainLocalSymbols(currentEnum);
+        Tab.closeScope();
+        currentEnum = null;
+    }
+
+    // Method Declarations
     @Override
     public void visit(MethRetAndName_void methodNameVoid){
         currentMethod = Tab.insert(Obj.Meth, methodNameVoid.getI1(), Tab.noType);
