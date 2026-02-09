@@ -1,15 +1,16 @@
 // komentar pre programa
 program ColG
 
-//const int pi = 3, g = 11;
+const int pi = 3, g = 11;
 //char x, y[];
 //const bool t = true;
 enum en1 { abba = 2, baab = 3 }
 
 {
-	void main()
-//	int a, b[]; int x[], y; char eol;
-    {}
+	void main()	int a, b[]; int x[], y; char eol;
+    {
+        print(pi);
+    }
 
 //	bool m1(int fp1, char fp2[], bool fp3) int a, b[]; int x[], y; char eol;{}
 

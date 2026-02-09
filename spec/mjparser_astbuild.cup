@@ -60,7 +60,7 @@ nonterminal ConstDecl ConstDecl;
 nonterminal VarDecl VarDecl;
 nonterminal EnumDecl EnumDecl;
 nonterminal MethodDeclList MethodDeclList;
-nonterminal MethodDecl MethodDecl;                       // Program
+nonterminal MethodDecl MethodDecl;
 nonterminal ConstDeclSingle ConstDeclSingle;
 nonterminal ConstDeclMore ConstDeclMore;
 nonterminal Type Type;
@@ -69,7 +69,7 @@ nonterminal VarDeclSingle VarDeclSingle;
 nonterminal VarDeclMore VarDeclMore;
 nonterminal EnumDeclName EnumDeclName;
 nonterminal EnumDeclSingle EnumDeclSingle;
-nonterminal EnumDeclMore EnumDeclMore;     // ConstDecl, VarDecl, EnumDecl
+nonterminal EnumDeclMore EnumDeclMore;
 nonterminal MethRetAndName MethRetAndName;
 nonterminal FormParOpt FormParOpt;
 nonterminal VarDeclList VarDeclList;
@@ -77,16 +77,14 @@ nonterminal StatementList StatementList;
 nonterminal FormPars FormPars;
 nonterminal Statement Statement;
 nonterminal FormParSingle FormParSingle;
-nonterminal FormParMore FormParMore;                    // MethodDecl, FormPars
+nonterminal FormParMore FormParMore;
 nonterminal DesignatorStatement DesignatorStatement;
 nonterminal Condition Condition;
-nonterminal Designator Designator;
 nonterminal ElseStmt ElseStmt;
-nonterminal Expr Expr;
 nonterminal CaseList CaseList;
 nonterminal Case Case;
 nonterminal DesignatorStatementOpt DesignatorStatementOpt;
-nonterminal ConditionOpt ConditionOpt;           // Statement
+nonterminal ConditionOpt ConditionOpt;
 nonterminal Assignop Assignop;
 nonterminal ActParsOpt ActParsOpt;
 nonterminal ActPars ActPars;
@@ -95,21 +93,14 @@ nonterminal ActParMore ActParMore;
 nonterminal CondTermList CondTermList;
 nonterminal CondTerm CondTerm;
 nonterminal CondFactList CondFactList;
-nonterminal CondFact CondFact;                    // DesignatorStatement, ActPars, Condition, CondTerm, CondFact
-nonterminal Term Term;
-nonterminal AddopTermList AddopTermList;
+nonterminal CondFact CondFact;
 nonterminal Addop Addop;
 nonterminal Relop Relop;
-nonterminal RelExpr RelExpr;
-nonterminal SimpleExpr SimpleExpr;
-nonterminal MulopFactorList MulopFactorList;
 nonterminal Mulop Mulop;
-nonterminal Factor Factor;
 nonterminal Unary Unary;
-nonterminal FactorSub FactorSub;                   // Expr, Term, Factor
-nonterminal DesignatorArrayName DesignatorArrayName;
-nonterminal DesignatorArrayList DesignatorArrayList;
-nonterminal DesignatorArraySub DesignatorArraySub;                                                               // Designator
+
+nonterminal rs.etf.pp1.symboltable.concepts.Struct Factor, FactorSub, MulopFactorList, Term, AddopTermList, RelExpr, Expr;
+nonterminal rs.etf.pp1.symboltable.concepts.Obj Designator, DesignatorArrayName;
 
 
 precedence left ELSE;
@@ -299,20 +290,15 @@ CondFactList ::= (CondFactList_and) CondFactList:C1 AND CondFact:C2 {: RESULT=ne
 
 // CondFact
 
-CondFact ::= (CondFact_expr) SimpleExpr:S1 {: RESULT=new CondFact_expr(S1); RESULT.setLine(S1left); :}
+CondFact ::= (CondFact_expr) RelExpr:R1 {: RESULT=new CondFact_expr(R1); RESULT.setLine(R1left); :}
              |
-             (CondFact_rel)  SimpleExpr:S1 Relop:R2 SimpleExpr:S3 {: RESULT=new CondFact_rel(S1, R2, S3); RESULT.setLine(S1left); :};
+             (CondFact_rel)  RelExpr:R1 Relop:R2 RelExpr:R3 {: RESULT=new CondFact_rel(R1, R2, R3); RESULT.setLine(R1left); :};
 
 // Expr
 
-Expr ::= (Expr_base) SimpleExpr:S1 {: RESULT=new Expr_base(S1); RESULT.setLine(S1left); :}
+Expr ::= (Expr_base) RelExpr:R1 {: RESULT=new Expr_base(R1); RESULT.setLine(R1left); :}
          |
          (Expr_cond) Condition:C1 QUESTION Expr:E2 COLON Expr:E3 {: RESULT=new Expr_cond(C1, E2, E3); RESULT.setLine(C1left); :};
-
-SimpleExpr ::= (SimpleExpr_base) RelExpr:R1 {: RESULT=new SimpleExpr_base(R1); RESULT.setLine(R1left); :}
-             |
-             (SimpleExpr_minus) MINUS RelExpr:R1 {: RESULT=new SimpleExpr_minus(R1); RESULT.setLine(R1left); :};
-
 
 RelExpr ::= (RelExpr_add) AddopTermList:A1 {: RESULT=new RelExpr_add(A1); RESULT.setLine(A1left); :};
 
@@ -328,8 +314,11 @@ MulopFactorList ::= (MulopFactorList_mul) MulopFactorList:M1 Mulop:M2 Factor:F3 
 					|
 					(MulopFactorList_factor) Factor:F1 {: RESULT=new MulopFactorList_factor(F1); RESULT.setLine(F1left); :};
 
-Factor ::= (Factor) FactorSub:F1 {: RESULT=new Factor(F1); RESULT.setLine(F1left); :};
+Factor ::= (Factor) Unary:U1 FactorSub:F2 {: RESULT=new Factor(U1, F2); RESULT.setLine(U1left); :};
 
+Unary ::= 	(Unary_m) MINUS {: RESULT=new Unary_m(); :}
+			|
+			(Unary_e) {: RESULT=new Unary_e(); :} /* epsilon */;
 
 // Factor
 
@@ -354,20 +343,14 @@ FactorSub ::= (FactorSub_var) Designator:D1 {: RESULT=new FactorSub_var(D1); RES
 // Designator
 
 Designator ::= 	(Designator_var) IDENT:I1 {: RESULT=new Designator_var(I1); RESULT.setLine(I1left); :}
+                |
+                (Designator_ident) DesignatorArrayName:D1 DOT IDENT:I2 {: RESULT=new Designator_ident(D1, I2); RESULT.setLine(D1left); :}
+                |
+                (Designator_len) DesignatorArrayName:D1 DOT LENGTH {: RESULT=new Designator_len(D1); RESULT.setLine(D1left); :}
 				|
-				(Designator_elem) DesignatorArrayName:D1 DesignatorArrayList:D2 {: RESULT=new Designator_elem(D1, D2); RESULT.setLine(D1left); :};
+				(Designator_elem) DesignatorArrayName:D1 LBRACKET Expr:E2 RBRACKET {: RESULT=new Designator_elem(D1, E2); RESULT.setLine(D1left); :};
 
 DesignatorArrayName ::= (DesignatorArrayName) IDENT:I1 {: RESULT=new DesignatorArrayName(I1); RESULT.setLine(I1left); :};
-
-DesignatorArrayList ::= (DesignatorArrayList_more) DesignatorArrayList:D1 DesignatorArraySub:D2 {: RESULT=new DesignatorArrayList_more(D1, D2); RESULT.setLine(D1left); :}
-                              |
-                              (DesignatorArrayList_sub) DesignatorArraySub:D1 {: RESULT=new DesignatorArrayList_sub(D1); RESULT.setLine(D1left); :};
-
-DesignatorArraySub ::= (DesignatorArraySub_ident) DOT IDENT:I1 {: RESULT=new DesignatorArraySub_ident(I1); RESULT.setLine(I1left); :}
-                       |
-                       (DesignatorArraySub_len) DOT LENGTH {: RESULT=new DesignatorArraySub_len(); :}
-                       |
-                       (DesignatorArraySub_expr) LBRACKET Expr:E1 RBRACKET {: RESULT=new DesignatorArraySub_expr(E1); RESULT.setLine(E1left); :};
 
 // Operators
 

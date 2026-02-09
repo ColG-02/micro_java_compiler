@@ -224,7 +224,6 @@ public class SemanticAnalyzer extends VisitorAdaptor {
         }
     }
 
-
 	@Override
 	public void visit(Type type) {
 		Obj typeObj = Tab.find(type.getI1());
@@ -241,6 +240,117 @@ public class SemanticAnalyzer extends VisitorAdaptor {
 		}
 	}
 
+    // Context Conditions
 
-	
+    //Designator
+    @Override
+    public void visit(Designator_var designatorVar){
+        Obj varObj = Tab.find(designatorVar.getI1());
+        if(varObj == Tab.noObj) {
+            report_error("Pristup nedefinisanoj promenljivi: ",  designatorVar);
+            designatorVar.obj = Tab.noObj;
+        }
+        else if(varObj.getKind() != Obj.Var && varObj.getKind() != Obj.Con && varObj.getKind() != Obj.Meth) {
+            report_error("Neadekvatna promenljiva: " + designatorVar.getI1(), designatorVar);
+            designatorVar.obj = Tab.noObj;
+        }
+        else{
+            designatorVar.obj = varObj;
+        }
+    }
+
+    @Override
+    public void visit(DesignatorArrayName designatorArrayName){
+        Obj arrObj = Tab.find(designatorArrayName.getI1());
+        if(arrObj == Tab.noObj) {
+            report_error("Pristup nedefinisanoj promenljivi niza: ",  designatorArrayName);
+            designatorArrayName.obj = Tab.noObj;
+        }
+        else if(arrObj.getKind() != Obj.Var || arrObj.getType().getKind() == Struct.Array) {
+            report_error("Neadekvatna promenljiva niza: " + designatorArrayName.getI1(), designatorArrayName);
+            designatorArrayName.obj = Tab.noObj;
+        }
+        else{
+            designatorArrayName.obj = arrObj;
+        }
+    }
+
+    @Override
+    public void visit(Designator_elem designatorElem){
+        Obj arrObj = designatorElem.getDesignatorArrayName().obj;
+        if(arrObj == Tab.noObj) {
+            designatorElem.obj = Tab.noObj;
+        }
+        else if(!designatorElem.getExpr().struct.equals(Tab.intType)) {
+            report_error("Indeksiranje sa ne int vrednosti [Designator_elem]", designatorElem);
+            designatorElem.obj = Tab.noObj;
+        }
+        else{
+            designatorElem.obj = new Obj(Obj.Elem, arrObj.getName() + "[$]", arrObj.getType().getElemType());
+        }
+    }
+
+    // Factor
+    @Override
+    public void visit(Factor factor){
+        if(factor.getUnary() instanceof Unary_m){
+            if(factor.getFactorSub().struct.equals(Tab.intType))
+                factor.struct = Tab.intType;
+            else {
+                report_error("Negacija ne int vrednosti", factor);
+                factor.struct = Tab.noType;
+            }
+        }
+        else factor.struct = factor.getFactorSub().struct;
+    }
+    // FactorSub
+    @Override
+    public void visit(FactorSub_var factorSubVar) {
+        factorSubVar.struct = factorSubVar.getDesignator().obj.getType();
+    }
+
+    @Override
+    public void visit(FactorSub_emp factorSubEmp) {
+        factorSubEmp.struct = factorSubEmp.getDesignator().obj.getType();
+    }
+
+    @Override
+    public void visit(FactorSub_meth factorSubMeth) {
+        factorSubMeth.struct = factorSubMeth.getDesignator().obj.getType();
+    }
+
+    @Override
+    public void visit(FactorSub_n factorSubN) {
+        factorSubN.struct = Tab.intType;
+    }
+
+    @Override
+    public void visit(FactorSub_c factorSubC) {
+        factorSubC.struct = Tab.charType;
+    }
+
+    @Override
+    public void visit(FactorSub_b factorSubB) {
+        factorSubB.struct = boolType;
+    }
+
+    @Override
+    public void visit(FactorSub_new_array factorSubNewArray) {
+        if(!factorSubNewArray.getExpr().struct.equals(Tab.intType)){
+            report_error("Velicina niza nije tipa int [FactorSub_new_array]", factorSubNewArray);
+            factorSubNewArray.struct = Tab.noType;
+        }
+        else
+            factorSubNewArray.struct = new Struct(Struct.Array, currentType);
+    }
+
+    @Override
+    public void visit(FactorSub_new factorSubNewArray) {
+        factorSubNewArray.struct = currentType;
+    }
+
+    @Override
+    public void visit(FactorSub_expr factorSubExpr) {
+        factorSubExpr.struct = factorSubExpr.getExpr().struct;
+    }
 }

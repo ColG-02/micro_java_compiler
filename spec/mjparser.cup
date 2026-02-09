@@ -53,13 +53,15 @@ terminal Integer BOOL;
 terminal String IDENT;
 
 
-nonterminal Program, ProgramName, ConstVarEnumDeclList, ConstDecl, VarDecl, EnumDecl, MethodDeclList, MethodDecl;                       // Program
-nonterminal ConstDeclSingle, ConstDeclMore, Type, Constant, VarDeclSingle, VarDeclMore, EnumDeclName, EnumDeclSingle, EnumDeclMore;     // ConstDecl, VarDecl, EnumDecl
-nonterminal MethRetAndName, FormParOpt, VarDeclList, StatementList, FormPars, Statement, FormParSingle, FormParMore;                    // MethodDecl, FormPars
-nonterminal DesignatorStatement, Condition, Designator, ElseStmt, Expr, CaseList, Case, DesignatorStatementOpt, ConditionOpt;           // Statement
-nonterminal Assignop, ActParsOpt, ActPars, ActParSingle, ActParMore, CondTermList, CondTerm, CondFactList, CondFact;                    // DesignatorStatement, ActPars, Condition, CondTerm, CondFact
-nonterminal Term, AddopTermList, Addop, Relop, RelExpr, SimpleExpr, MulopFactorList, Mulop, Factor, Unary, FactorSub;                   // Expr, Term, Factor
-nonterminal DesignatorArrayName, DesignatorArrayList, DesignatorArraySub;                                                               // Designator
+nonterminal Program, ProgramName, ConstVarEnumDeclList, ConstDecl, VarDecl, EnumDecl, MethodDeclList, MethodDecl;
+nonterminal ConstDeclSingle, ConstDeclMore, Type, Constant, VarDeclSingle, VarDeclMore, EnumDeclName, EnumDeclSingle, EnumDeclMore;
+nonterminal MethRetAndName, FormParOpt, VarDeclList, StatementList, FormPars, Statement, FormParSingle, FormParMore;
+nonterminal DesignatorStatement, Condition, ElseStmt, CaseList, Case, DesignatorStatementOpt, ConditionOpt;
+nonterminal Assignop, ActParsOpt, ActPars, ActParSingle, ActParMore, CondTermList, CondTerm, CondFactList, CondFact;
+nonterminal Addop, Relop, Mulop, Unary;
+
+nonterminal rs.etf.pp1.symboltable.concepts.Struct Factor, FactorSub, MulopFactorList, Term, AddopTermList, RelExpr, Expr;
+nonterminal rs.etf.pp1.symboltable.concepts.Obj Designator, DesignatorArrayName;
 
 
 precedence left ELSE;
@@ -249,20 +251,15 @@ CondFactList ::= (CondFactList_and) CondFactList AND CondFact
 
 // CondFact
 
-CondFact ::= (CondFact_expr) SimpleExpr
+CondFact ::= (CondFact_expr) RelExpr
              |
-             (CondFact_rel)  SimpleExpr Relop SimpleExpr;
+             (CondFact_rel)  RelExpr Relop RelExpr;
 
 // Expr
 
-Expr ::= (Expr_base) SimpleExpr
+Expr ::= (Expr_base) RelExpr
          |
          (Expr_cond) Condition QUESTION Expr COLON Expr;
-
-SimpleExpr ::= (SimpleExpr_base) RelExpr
-             |
-             (SimpleExpr_minus) MINUS RelExpr;
-
 
 RelExpr ::= (RelExpr_add) AddopTermList;
 
@@ -278,8 +275,11 @@ MulopFactorList ::= (MulopFactorList_mul) MulopFactorList Mulop Factor
 					|
 					(MulopFactorList_factor) Factor;
 
-Factor ::= (Factor) FactorSub;
+Factor ::= (Factor) Unary FactorSub;
 
+Unary ::= 	(Unary_m) MINUS
+			|
+			(Unary_e) /* epsilon */;
 
 // Factor
 
@@ -304,20 +304,14 @@ FactorSub ::= (FactorSub_var) Designator
 // Designator
 
 Designator ::= 	(Designator_var) IDENT
+                |
+                (Designator_ident) DesignatorArrayName DOT IDENT
+                |
+                (Designator_len) DesignatorArrayName DOT LENGTH
 				|
-				(Designator_elem) DesignatorArrayName DesignatorArrayList;
+				(Designator_elem) DesignatorArrayName LBRACKET Expr RBRACKET;
 
 DesignatorArrayName ::= (DesignatorArrayName) IDENT;
-
-DesignatorArrayList ::= (DesignatorArrayList_more) DesignatorArrayList DesignatorArraySub
-                              |
-                              (DesignatorArrayList_sub) DesignatorArraySub;
-
-DesignatorArraySub ::= (DesignatorArraySub_ident) DOT IDENT
-                       |
-                       (DesignatorArraySub_len) DOT LENGTH
-                       |
-                       (DesignatorArraySub_expr) LBRACKET Expr RBRACKET;
 
 // Operators
 
