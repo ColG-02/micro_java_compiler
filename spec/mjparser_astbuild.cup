@@ -98,6 +98,8 @@ nonterminal Addop Addop;
 nonterminal Relop Relop;
 nonterminal Mulop Mulop;
 nonterminal Unary Unary;
+nonterminal ForNonterm ForNonterm;
+nonterminal SwitchNonterm SwitchNonterm;
 
 nonterminal rs.etf.pp1.symboltable.concepts.Struct Factor, FactorSub, MulopFactorList, Term, AddopTermList, RelExpr, Expr;
 nonterminal rs.etf.pp1.symboltable.concepts.Obj Designator, DesignatorArrayName;
@@ -224,11 +226,15 @@ Statement ::= (Statement_ds) DesignatorStatement:D1 SEMI {: RESULT=new Statement
 			  |
 			  (Statement_print2) PRINT LPARENT Expr:E1 COMMA NUMBER:N2 RPARENT SEMI {: RESULT=new Statement_print2(E1, N2); RESULT.setLine(E1left); :}
 			  |
-			  (Statement_switch) SWITCH LPARENT Expr:E1 RPARENT LBRACE CaseList:C2 RBRACE {: RESULT=new Statement_switch(E1, C2); RESULT.setLine(E1left); :}
+			  (Statement_switch) SwitchNonterm:S1 LPARENT Expr:E2 RPARENT LBRACE CaseList:C3 RBRACE {: RESULT=new Statement_switch(S1, E2, C3); RESULT.setLine(S1left); :}
               |
-              (Statement_for) FOR LPARENT DesignatorStatementOpt:D1 SEMI ConditionOpt:C2 SEMI DesignatorStatementOpt:D3 RPARENT Statement:S4 {: RESULT=new Statement_for(D1, C2, D3, S4); RESULT.setLine(D1left); :}
+              (Statement_for) ForNonterm:F1 LPARENT DesignatorStatementOpt:D2 SEMI ConditionOpt:C3 SEMI DesignatorStatementOpt:D4 RPARENT Statement:S5 {: RESULT=new Statement_for(F1, D2, C3, D4, S5); RESULT.setLine(F1left); :}
               |
               (Statement_list) LBRACE StatementList:S1 RBRACE {: RESULT=new Statement_list(S1); RESULT.setLine(S1left); :};
+
+ForNonterm ::= (ForNonterm) FOR {: RESULT=new ForNonterm(); :};
+
+SwitchNonterm ::= (SwitchNonterm) SWITCH {: RESULT=new SwitchNonterm(); :};
 
 ElseStmt ::= (ElseStmt_yes) ELSE Statement:S1 {: RESULT=new ElseStmt_yes(S1); RESULT.setLine(S1left); :}
 			 |

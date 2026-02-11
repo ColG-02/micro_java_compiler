@@ -58,7 +58,7 @@ nonterminal ConstDeclSingle, ConstDeclMore, Type, Constant, VarDeclSingle, VarDe
 nonterminal MethRetAndName, FormParOpt, VarDeclList, StatementList, FormPars, Statement, FormParSingle, FormParMore;
 nonterminal DesignatorStatement, Condition, ElseStmt, CaseList, Case, DesignatorStatementOpt, ConditionOpt;
 nonterminal Assignop, ActParsOpt, ActPars, ActParSingle, ActParMore, CondTermList, CondTerm, CondFactList, CondFact;
-nonterminal Addop, Relop, Mulop, Unary;
+nonterminal Addop, Relop, Mulop, Unary, ForNonterm, SwitchNonterm;
 
 nonterminal rs.etf.pp1.symboltable.concepts.Struct Factor, FactorSub, MulopFactorList, Term, AddopTermList, RelExpr, Expr;
 nonterminal rs.etf.pp1.symboltable.concepts.Obj Designator, DesignatorArrayName;
@@ -185,11 +185,15 @@ Statement ::= (Statement_ds) DesignatorStatement SEMI
 			  |
 			  (Statement_print2) PRINT LPARENT Expr COMMA NUMBER RPARENT SEMI
 			  |
-			  (Statement_switch) SWITCH LPARENT Expr RPARENT LBRACE CaseList RBRACE
+			  (Statement_switch) SwitchNonterm LPARENT Expr RPARENT LBRACE CaseList RBRACE
               |
-              (Statement_for) FOR LPARENT DesignatorStatementOpt SEMI ConditionOpt SEMI DesignatorStatementOpt RPARENT Statement
+              (Statement_for) ForNonterm LPARENT DesignatorStatementOpt SEMI ConditionOpt SEMI DesignatorStatementOpt RPARENT Statement
               |
               (Statement_list) LBRACE StatementList RBRACE;
+
+ForNonterm ::= (ForNonterm) FOR;
+
+SwitchNonterm ::= (SwitchNonterm) SWITCH;
 
 ElseStmt ::= (ElseStmt_yes) ELSE Statement
 			 |
