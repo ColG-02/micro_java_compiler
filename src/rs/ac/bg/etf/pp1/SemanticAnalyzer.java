@@ -581,11 +581,6 @@ public class SemanticAnalyzer extends VisitorAdaptor {
         factorSubVar.struct = factorSubVar.getDesignator().obj.getType();
     }
 
-//    @Override
-//    public void visit(FactorSub_emp factorSubEmp) {
-//        factorSubEmp.struct = factorSubEmp.getDesignator().obj.getType();
-//    }
-
     @Override
     public void visit(FactorSub_meth factorSubMeth) {
         if(factorSubMeth.getDesignator().obj.getKind() != Obj.Meth){
@@ -603,8 +598,8 @@ public class SemanticAnalyzer extends VisitorAdaptor {
             factorSubMeth.getActParsOpt().traverseBottomUp(apc);
             List<Struct> apList = apc.finalActParList;
 
-            report_info("BROJ FP: " + fpList.size(), factorSubMeth);
-            report_info("BROJ AP: " + apList.size(), factorSubMeth);
+//            report_info("BROJ FP: " + fpList.size(), factorSubMeth);
+//            report_info("BROJ AP: " + apList.size(), factorSubMeth);
 
             try{
                 if(fpList.size() != apList.size())

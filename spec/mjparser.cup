@@ -153,7 +153,7 @@ StatementList ::= (StatementList_stmt) StatementList Statement
 
 FormPars ::= (FormPars_list) FormParSingle FormParMore;
 
-FormParMore ::= (FormParMore_comma) COMMA FormParSingleFormParMore
+FormParMore ::= (FormParMore_comma) COMMA FormParSingle FormParMore
 				|
 				(FormParMore_e) /* epsilon */;
 
@@ -291,8 +291,6 @@ Unary ::= 	(Unary_m) MINUS
 // Factor
 
 FactorSub ::= (FactorSub_var) Designator
-//			  |
-//			  (FactorSub_emp) Designator LPARENT RPARENT
 			  |
 			  (FactorSub_meth) Designator LPARENT ActParsOpt RPARENT
 		   	  |

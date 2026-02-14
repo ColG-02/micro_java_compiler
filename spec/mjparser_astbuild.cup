@@ -265,11 +265,11 @@ ActParsOpt ::= (ActParsOpt_pars) ActParListBegin:A1 ActPars:A2 {: RESULT=new Act
                |
                (ActParsOpt_e) ActParListBegin:A1 {: RESULT=new ActParsOpt_e(A1); RESULT.setLine(A1left); :} /* epsilon */;
 
+ActParListBegin ::= (ActParListBegin) {: RESULT=new ActParListBegin(); :} /* epsilon */;
+
 // ActPars
 
 ActPars ::= (ActPars_list) ActParSingle:A1 ActParMore:A2 {: RESULT=new ActPars_list(A1, A2); RESULT.setLine(A1left); :};
-
-ActParListBegin ::= (ActParListBegin) {: RESULT=new ActParListBegin(); :} /* epsilon */;
 
 ActParMore ::= (ActParMore_comma) COMMA ActParSingle:A1 ActParMore:A2 {: RESULT=new ActParMore_comma(A1, A2); RESULT.setLine(A1left); :}
 			   |
@@ -328,8 +328,6 @@ Unary ::= 	(Unary_m) MINUS {: RESULT=new Unary_m(); :}
 // Factor
 
 FactorSub ::= (FactorSub_var) Designator:D1 {: RESULT=new FactorSub_var(D1); RESULT.setLine(D1left); :}
-//			  |
-//			  (FactorSub_emp) Designator LPARENT RPARENT
 			  |
 			  (FactorSub_meth) Designator:D1 LPARENT ActParsOpt:A2 RPARENT {: RESULT=new FactorSub_meth(D1, A2); RESULT.setLine(D1left); :}
 		   	  |

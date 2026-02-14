@@ -30,7 +30,7 @@ public class Compiler {
 		Reader br = null;
 		try {
 
-			File sourceCode = new File("test/temp.mj");
+			File sourceCode = new File("test/test302.mj");
 			log.info("Compiling source file: " + sourceCode.getAbsolutePath());
 
 			br = new BufferedReader(new FileReader(sourceCode));
@@ -62,6 +62,9 @@ public class Compiler {
 //			Obj setObj = Tab.insert(Obj.Type, "set", setType);
 //			setObj.setAdr(-1);
 //			setObj.setLevel(-1);
+
+            // Prepravka formalnih parametara ugradjenih metoda
+
 
 			// Semanticka analiza
 			SemanticAnalyzer semAnalyzer = new SemanticAnalyzer();
