@@ -1,31 +1,11 @@
 program Temp
 
-enum Broj { NULA, JEDAN, PET=5, DESET=10}
-
-const int nula = 0;
-//const int jedan = 1;
-//const int pet = 5;
-
-//int niz[];
-//char nizch[];
-
-//int a;
-
 {
-
     void main ()
-//        int bodovi;
-//        int temp;
-        Broj nula, jedan;
-//        bool bt;
+        char c;
     {
-
-        nula = Broj.NULA;
-
-
-
-
-
+        print(ord(c));      // defined but pars weren't counted properly
+        print(foo(c));      // not defined at all
     }
 
 }

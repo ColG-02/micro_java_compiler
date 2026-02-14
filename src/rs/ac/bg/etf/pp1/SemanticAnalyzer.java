@@ -30,9 +30,11 @@ public class SemanticAnalyzer extends VisitorAdaptor {
     private int switchCnt = 0;
     private int enumValCnt = 0;
     private Set<Integer> caseSet = new HashSet<>();
+    private Set<Integer> enumValueSet = new HashSet<>();
 
 
-	public void report_error(String message, SyntaxNode info) {
+
+    public void report_error(String message, SyntaxNode info) {
 		errorDetected = true;
 		StringBuilder msg = new StringBuilder(message);
 		int line = (info == null) ? 0 : info.getLine();
@@ -143,39 +145,56 @@ public class SemanticAnalyzer extends VisitorAdaptor {
         Obj enumObj = Tab.find(enumDeclName.getI1());
         if(enumObj != Tab.noObj){
             report_error("Dvostruka definicija nabrajanja: " + enumDeclName.getI1(), enumDeclName);
+            currentEnum = null;
         }
         else{
-            currentEnum = new Struct(Struct.Class);
+            currentEnum = new Struct(Struct.Enum);
+//            currentEnum.setElementType(new Struct((Struct.Int))); // NE ZNAM
             enumObj = Tab.insert(Obj.Type, enumDeclName.getI1(), currentEnum);
             Tab.openScope();
             enumValCnt = 0;
+            enumValueSet.clear();
         }
     }
 
     @Override
     public void visit(EnumDeclSingle_num enumDeclSingleNum) {
         Obj enumObj = Tab.currentScope.findSymbol(enumDeclSingleNum.getI1());
-        if(enumObj == null || enumObj == Tab.noObj){
-            enumObj = Tab.insert(Obj.Fld, enumDeclSingleNum.getI1(), Tab.intType);
-            enumObj.setLevel(2);
-            enumObj.setAdr(enumDeclSingleNum.getN2());
-            enumValCnt = enumDeclSingleNum.getN2()+1;
+        int val = enumDeclSingleNum.getN2();
+        if (enumObj != null && enumObj != Tab.noObj){
+            report_error("Dvostruka definicija pri nabrajanju: " + enumDeclSingleNum.getI1(), enumDeclSingleNum);
+            return;
+        }
+        else if (enumValueSet.contains(val)) {
+            report_error("Dvostruka vrednost pri nabrajanju: " + val, enumDeclSingleNum);
+            return;
         }
         else{
-            report_error("Dvostruka definicija pri nabrajanju: " + enumDeclSingleNum.getI1(), enumDeclSingleNum);
+            enumValueSet.add(val);
+            enumObj = Tab.insert(Obj.Con, enumDeclSingleNum.getI1(), Tab.intType);
+//            enumObj.setLevel(2);
+            enumObj.setAdr(val);
+            enumValCnt = val + 1;
         }
     }
 
     @Override
     public void visit(EnumDeclSingle_ident enumDeclSingleIdent) {
         Obj enumObj = Tab.currentScope.findSymbol(enumDeclSingleIdent.getI1());
-        if(enumObj == null || enumObj == Tab.noObj){
-            enumObj = Tab.insert(Obj.Elem, enumDeclSingleIdent.getI1(), Tab.intType);
-            enumObj.setLevel(2);
-            enumObj.setAdr(enumValCnt++);
+        int val = enumValCnt;
+        if(enumObj != null && enumObj != Tab.noObj){
+            report_error("Dvostruka definicija pri nabrajanju: " + enumDeclSingleIdent.getI1(), enumDeclSingleIdent);
+            return;
+        }
+        else if (enumValueSet.contains(val)) {
+            report_error("Dvostruka vrednost pri nabrajanju: " + val, enumDeclSingleIdent);
+            return;
         }
         else{
-            report_error("Dvostruka definicija pri nabrajanju: " + enumDeclSingleIdent.getI1(), enumDeclSingleIdent);
+            enumValueSet.add(val);
+            enumObj = Tab.insert(Obj.Con, enumDeclSingleIdent.getI1(), Tab.intType);
+//            enumObj.setLevel(2);
+            enumObj.setAdr(enumValCnt++);
         }
     }
 
@@ -184,6 +203,7 @@ public class SemanticAnalyzer extends VisitorAdaptor {
         Tab.chainLocalSymbols(currentEnum);
         Tab.closeScope();
         currentEnum = null;
+        enumValueSet.clear();
     }
 
     // Method Declarations
@@ -251,13 +271,23 @@ public class SemanticAnalyzer extends VisitorAdaptor {
 		if(typeObj == Tab.noObj) {
 			report_error("Nepostojeci tip podatka: " + type.getI1(), type);
 			currentType = Tab.noType;
+            return;
 		}
 		else if(typeObj.getKind() != Obj.Type) {
 			report_error("Neadekvatan tip podatka: " + type.getI1(), type);
 			currentType = Tab.noType;
+            return;
 		}
 		else {
-			currentType = typeObj.getType();
+//			currentType = typeObj.getType(); OLD
+            Struct t = typeObj.getType();
+
+            // Enum se koristi kao "namespace"; konstante su int, pa i tip tretiramo kao int
+            if (t != null && t.getKind() == Struct.Enum) {
+                currentType = Tab.intType;
+            } else {
+                currentType = t;
+            }
 		}
 	}
 
@@ -425,20 +455,47 @@ public class SemanticAnalyzer extends VisitorAdaptor {
     }
 
     @Override
-    public void visit(Designator_ident designatorIdent){    // PROVERI
+    public void visit(Designator_ident designatorIdent){    // (ENUM VREDNOST) PROVERI
         Obj arrObj = designatorIdent.getDesignatorArrayName().obj;
-        if(arrObj == Tab.noObj) {
+        String memberName = designatorIdent.getI2();
+        if(arrObj == Tab.noObj)
             designatorIdent.obj = Tab.noObj;
-        }
-//        else if(!arrObj.getType().equals(Struct.Enum)) {
-//
+
+        // EnumName.CONST
+        if (arrObj.getKind() == Obj.Type && arrObj.getType() != null && arrObj.getType().getKind() == Struct.Enum) {
+            Obj found = null;
+
+            // members su upisani u Struct preko chainLocalSymbols(currentEnum)
+            for (Obj m : arrObj.getType().getMembers()) {
+                if (m.getName().equals(memberName)) {
+                    found = m;
+                    break;
+                }
+            }
+
+            if (found == null) {
+                report_error("Enum konstanta ne postoji: " + arrObj.getName() + "." + memberName, designatorIdent);
+                designatorIdent.obj = Tab.noObj;
+                return;
+            }
+
+            // očekujemo Obj.Con intType
+            if (found.getKind() != Obj.Con || !found.getType().equals(Tab.intType)) {
+                report_error("Enum clan nije validna konstanta: " + arrObj.getName() + "." + memberName, designatorIdent);
+                designatorIdent.obj = Tab.noObj;
+                return;
+            }
+
+            designatorIdent.obj = found;
+            return;
+
+//        else if (Tab.currentScope().findSymbol(designatorIdent.getI2()) == Tab.noObj) {
+//            report_error("Element niza ne postoji [Designator_ident]", designatorIdent);
+//            designatorIdent.obj = Tab.noObj;
 //        }
-        else if (Tab.currentScope().findSymbol(designatorIdent.getI2()) == Tab.noObj) {
-            report_error("Element niza ne postoji [Designator_ident]", designatorIdent);
-            designatorIdent.obj = Tab.noObj;
-        }
-        else{
-            designatorIdent.obj = new Obj(Obj.Elem, arrObj.getName() + ".length", arrObj.getType());
+//        else{
+//            designatorIdent.obj = new Obj(Obj.Elem, arrObj.getName() + ".length", arrObj.getType());
+//        }
         }
     }
 
@@ -447,24 +504,35 @@ public class SemanticAnalyzer extends VisitorAdaptor {
         Obj arrObj = designatorLen.getDesignatorArrayName().obj;
         if(arrObj == Tab.noObj) {
             designatorLen.obj = Tab.noObj;
+            return;
         }
-//        else if(!designatorLen.obj.getType().equals(Struct.Array)){
-//            report_error("Designator nije tipa niz",  designatorLen);
-//        }
+        else if (arrObj.getKind() != Obj.Var || arrObj.getType() == null || arrObj.getType().getKind() != Struct.Array) {
+            report_error("Designator nije tipa niz", designatorLen);
+            designatorLen.obj = Tab.noObj;
+            return;
+        }
         else{
-            designatorLen.obj = new Obj(Obj.Elem, arrObj.getName() + ".length", arrObj.getType());
+            designatorLen.obj = new Obj(Obj.Elem, arrObj.getName() + ".length", Tab.intType);
         }
     }
 
     @Override
     public void visit(Designator_elem designatorElem){
         Obj arrObj = designatorElem.getDesignatorArrayName().obj;
+        Struct idxType = designatorElem.getExpr().struct;
         if(arrObj == Tab.noObj) {
             designatorElem.obj = Tab.noObj;
+            return;
         }
-        else if(!designatorElem.getExpr().struct.equals(Tab.intType)) {
+        else if(idxType == null || !idxType.equals(Tab.intType)) {
             report_error("Indeksiranje sa ne int vrednosti [Designator_elem]", designatorElem);
             designatorElem.obj = Tab.noObj;
+            return;
+        }
+        else if(arrObj.getType() == null || arrObj.getType().getKind() != Struct.Array){
+            report_error("Indeksiranje ne-niza [Designator_elem]", designatorElem);
+            designatorElem.obj = Tab.noObj;
+            return;
         }
         else{
             designatorElem.obj = new Obj(Obj.Elem, arrObj.getName() + "[$]", arrObj.getType().getElemType());
@@ -474,13 +542,19 @@ public class SemanticAnalyzer extends VisitorAdaptor {
     @Override
     public void visit(DesignatorArrayName designatorArrayName){
         Obj arrObj = Tab.find(designatorArrayName.getI1());
+
+        boolean okArrayVar = (arrObj.getKind() == Obj.Var && arrObj.getType() != null && arrObj.getType().getKind() == Struct.Array);
+        boolean okEnumType = (arrObj.getKind() == Obj.Type && arrObj.getType() != null && arrObj.getType().getKind() == Struct.Enum);
+
         if(arrObj == Tab.noObj) {
             report_error("Pristup nedefinisanoj promenljivi niza: ", designatorArrayName);
             designatorArrayName.obj = Tab.noObj;
+            return;
         }
-        else if(arrObj.getKind() != Obj.Var || arrObj.getType().getKind() != Struct.Array) {
+        else if(!okArrayVar && !okEnumType) {
             report_error("Neadekvatna promenljiva niza: " + designatorArrayName.getI1(), designatorArrayName);
             designatorArrayName.obj = Tab.noObj;
+            return;
         }
         else{
             designatorArrayName.obj = arrObj;
@@ -529,12 +603,13 @@ public class SemanticAnalyzer extends VisitorAdaptor {
             factorSubMeth.getActParsOpt().traverseBottomUp(apc);
             List<Struct> apList = apc.finalActParList;
 
-//            report_info("BROJ FP: " + fpList.size(), designatorStatementMeth);
-//            report_info("BROJ AP: " + apList.size(), designatorStatementMeth);
+            report_info("BROJ FP: " + fpList.size(), factorSubMeth);
+            report_info("BROJ AP: " + apList.size(), factorSubMeth);
 
             try{
                 if(fpList.size() != apList.size())
                     throw new Exception("Greska u broju parametara");
+
                 for(int i = 0; i < fpList.size(); i++){
                     Struct fps = fpList.get(i);
                     Struct aps = apList.get(i);

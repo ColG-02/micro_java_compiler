@@ -48,8 +48,8 @@ int niz[];
 		niz[0] = 1;
 		niz[1] = 2;
 		niz[2] = sum(niz[1], niz[0]) + 1;
-		if(niz[2] == 4 || verify()) print(ord('A')); 
-		else print(ord('a'));
+//		if(niz[2] == 4 || verify()) print(ord('A'));            //ERROR
+//		else print(ord('a'));                                   //ERROR
 		
 		print(eol);
 		i = 0;

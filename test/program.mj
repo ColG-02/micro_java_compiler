@@ -4,7 +4,7 @@ program ColG
 const int pi = 3, g = 11;
 char x, y[];
 //const bool t = true;
-enum en1 { a, b = 5, c , d = 0 , e }
+enum en1 { a, b = 5, c , d = 2 , e }
 
 enum en2 { a, b = 5, c }
 

@@ -153,7 +153,7 @@ StatementList ::= (StatementList_stmt) StatementList Statement
 
 FormPars ::= (FormPars_list) FormParSingle FormParMore;
 
-FormParMore ::= (FormParMore_comma) COMMA FormParSingle FormParMore
+FormParMore ::= (FormParMore_comma) COMMA FormParSingleFormParMore
 				|
 				(FormParMore_e) /* epsilon */;
 

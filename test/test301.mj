@@ -14,6 +14,8 @@ char nizch[];
 int a;
 	
 {
+    char ord(char c) {return c;}    // THIS LINE ADDED
+
 	void main()	
 		int bodovi;
 		int temp;
@@ -48,7 +50,7 @@ int a;
 		print(eol);
 		print(nizch[jedan * 2]); //c
 		print(eol);
-		print(ord(nizch[0])); //97
+		print(ord(nizch[0])); //97                                          //ERROR
 
 		print(nizch.length); // 3
 		print(niz.length); // 3
