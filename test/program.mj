@@ -2,9 +2,11 @@
 program ColG
 
 const int pi = 3, g = 11;
-//char x, y[];
+char x, y[];
 //const bool t = true;
-enum en1 { abba = 2, baab = 3 }
+enum en1 { a, b = 5, c , d = 0 , e }
+
+enum en2 { a, b = 5, c }
 
 {
 	void main()	int a, b[]; int x[], y; char eol;
@@ -42,36 +44,52 @@ enum en1 { abba = 2, baab = 3 }
 
         //m2();   //error
 
-	    return ;
+	    return false;
 	}
 
     int m2() int a; bool b; int i;{
         return 1;
         //a = m1();     //error
-        b = m1();
+        //b = m1();
         //break;        //error
         for (i = 0; i < 10; i++) {
             break;
         }
 
-        switch(i+1){
-            case 1:
-                print(1);
-                break;
-            case 3:
-                print(3);
-            case 2:
-                print(2);
-                break;
-            case 5:
-                print(5);
-                i = i + 2;
-                //continue;     //error
-            case 6:
-                print(6);
-            case 9:
-                print(9);
+        for (i = 0; i < 10; i++) {
+            switch(i+1){
+                case 1:
+                    print(1);
+                    break;
+                case 3:
+                    print(3);
+                case 2:
+                    print(2);
+                    break;
+                case 5:
+                    print(5);
+                    i = i + 2;
+                    continue;
+                case 6:
+                    print(6);
+                case 9:
+                    print(9);
+            }
+            print(eol);
         }
+
+        a = b ? 1 : 2;
+
+        if(true && a==2 || b && a < 2) a++;
+        if( b < b ) a++; // OVO TREBA DA BUDE ERROR??
+
     }
 
+    int f1(int x) { return x; }
+    int f2(int x, bool b) int a; { return f1(x) + a + 1; }
+
+    int f3() {
+        f2( f2(f1(1), true), false );    // error
+         return 1;
+    }
 }

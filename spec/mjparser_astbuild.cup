@@ -79,7 +79,6 @@ nonterminal Statement Statement;
 nonterminal FormParSingle FormParSingle;
 nonterminal FormParMore FormParMore;
 nonterminal DesignatorStatement DesignatorStatement;
-nonterminal Condition Condition;
 nonterminal ElseStmt ElseStmt;
 nonterminal CaseList CaseList;
 nonterminal Case Case;
@@ -90,10 +89,7 @@ nonterminal ActParsOpt ActParsOpt;
 nonterminal ActPars ActPars;
 nonterminal ActParSingle ActParSingle;
 nonterminal ActParMore ActParMore;
-nonterminal CondTermList CondTermList;
-nonterminal CondTerm CondTerm;
-nonterminal CondFactList CondFactList;
-nonterminal CondFact CondFact;
+nonterminal ActParListBegin ActParListBegin;
 nonterminal Addop Addop;
 nonterminal Relop Relop;
 nonterminal Mulop Mulop;
@@ -103,6 +99,7 @@ nonterminal SwitchNonterm SwitchNonterm;
 
 nonterminal rs.etf.pp1.symboltable.concepts.Struct Factor, FactorSub, MulopFactorList, Term, AddopTermList, RelExpr, Expr;
 nonterminal rs.etf.pp1.symboltable.concepts.Obj Designator, DesignatorArrayName;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct Condition, CondTermList, CondTerm, CondFactList, CondFact;
 
 
 precedence left ELSE;
@@ -264,13 +261,15 @@ DesignatorStatement ::= (DesignatorStatement_assign) Designator:D1 Assignop:A2 E
 						|
 						(DesignatorStatement_dec) Designator:D1 DEC {: RESULT=new DesignatorStatement_dec(D1); RESULT.setLine(D1left); :};
 
-ActParsOpt ::= (ActParsOpt_pars) ActPars:A1 {: RESULT=new ActParsOpt_pars(A1); RESULT.setLine(A1left); :}
+ActParsOpt ::= (ActParsOpt_pars) ActParListBegin:A1 ActPars:A2 {: RESULT=new ActParsOpt_pars(A1, A2); RESULT.setLine(A1left); :}
                |
-               (ActParsOpt_e) {: RESULT=new ActParsOpt_e(); :} /* epsilon */;
+               (ActParsOpt_e) ActParListBegin:A1 {: RESULT=new ActParsOpt_e(A1); RESULT.setLine(A1left); :} /* epsilon */;
 
 // ActPars
 
 ActPars ::= (ActPars_list) ActParSingle:A1 ActParMore:A2 {: RESULT=new ActPars_list(A1, A2); RESULT.setLine(A1left); :};
+
+ActParListBegin ::= (ActParListBegin) {: RESULT=new ActParListBegin(); :} /* epsilon */;
 
 ActParMore ::= (ActParMore_comma) COMMA ActParSingle:A1 ActParMore:A2 {: RESULT=new ActParMore_comma(A1, A2); RESULT.setLine(A1left); :}
 			   |
@@ -329,10 +328,10 @@ Unary ::= 	(Unary_m) MINUS {: RESULT=new Unary_m(); :}
 // Factor
 
 FactorSub ::= (FactorSub_var) Designator:D1 {: RESULT=new FactorSub_var(D1); RESULT.setLine(D1left); :}
+//			  |
+//			  (FactorSub_emp) Designator LPARENT RPARENT
 			  |
-			  (FactorSub_emp) Designator:D1 LPARENT RPARENT {: RESULT=new FactorSub_emp(D1); RESULT.setLine(D1left); :}
-			  |
-			  (FactorSub_meth) Designator:D1 LPARENT ActPars:A2 RPARENT {: RESULT=new FactorSub_meth(D1, A2); RESULT.setLine(D1left); :}
+			  (FactorSub_meth) Designator:D1 LPARENT ActParsOpt:A2 RPARENT {: RESULT=new FactorSub_meth(D1, A2); RESULT.setLine(D1left); :}
 		   	  |
 		   	  (FactorSub_n) NUMBER:N1 {: RESULT=new FactorSub_n(N1); RESULT.setLine(N1left); :}
 		   	  |
