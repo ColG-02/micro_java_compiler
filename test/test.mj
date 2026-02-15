@@ -1,0 +1,95 @@
+// komentar pre programa
+program ColG
+
+const int pi = 3, g = 11;
+char x, y[];
+//const bool t = true;
+enum en1 { a, b = 5, c , d = 2 , e }
+
+enum en2 { a, b = 5, c }
+
+{
+	void main()	int a, b[]; int x[], y; char eol;
+    {
+        print(x[a]);
+        a = 3 + b[2] * 2;
+        //g = 3;    //error
+        x = new int[5];
+        //x = a;  //error
+        x[2] = a;
+        x[3] = x[4];
+        x = null;
+        //x++;  //error
+        x[2]++;
+        //pi--;     //error
+        a--;
+        //eol++;    //error
+        read(x[2]);
+
+        print(1, 4);
+        print(a, 4);
+        print(eol, 4);
+        print(false, 4);
+
+        //print(x);     //error
+        print(x[2]);
+
+        //print(x);     //error
+        print(x[2]);
+
+        return;
+    }
+
+	bool m1(int fp1, char fp2[], bool fp3) int a, b[]; int x[], y; char eol;{
+
+        //m2();   //error
+
+	    return false;
+	}
+
+    int m2() int a; bool b; int i;{
+        return 1;
+        //a = m1();     //error
+        //b = m1();
+        //break;        //error
+        for (i = 0; i < 10; i++) {
+            break;
+        }
+
+        for (i = 0; i < 10; i++) {
+            switch(i+1){
+                case 1:
+                    print(1);
+                    break;
+                case 3:
+                    print(3);
+                case 2:
+                    print(2);
+                    break;
+                case 5:
+                    print(5);
+                    i = i + 2;
+                    continue;
+                case 6:
+                    print(6);
+                case 9:
+                    print(9);
+            }
+            print(eol);
+        }
+
+        a = b ? 1 : 2;
+
+        if(true && a==2 || b && a < 2) a++;
+        if( b < b ) a++; // OVO TREBA DA BUDE ERROR??
+
+    }
+
+    int f1(int x) { return x; }
+    int f2(int x, bool b) int a; { return f1(x) + a + 1; }
+
+    int f3() {
+        f2( f2(f1(1), true), false );    // error
+         return 1;
+    }
+}

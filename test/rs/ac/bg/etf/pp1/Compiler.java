@@ -1,16 +1,13 @@
 package rs.ac.bg.etf.pp1;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
+import java.io.*;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
 
 import java_cup.runtime.Symbol;
 import rs.ac.bg.etf.pp1.util.Log4JUtils;
+import rs.etf.pp1.mj.runtime.Code;
 import rs.etf.pp1.symboltable.Tab;
 import rs.etf.pp1.symboltable.concepts.Obj;
 import rs.etf.pp1.symboltable.concepts.Struct;
@@ -30,7 +27,7 @@ public class Compiler {
 		Reader br = null;
 		try {
 
-			File sourceCode = new File("test/test302.mj");
+			File sourceCode = new File("test/program.mj");
 			log.info("Compiling source file: " + sourceCode.getAbsolutePath());
 
 			br = new BufferedReader(new FileReader(sourceCode));
@@ -57,12 +54,6 @@ public class Compiler {
 			boolObj.setAdr(-1);
 			boolObj.setLevel(-1);
 
-//			// Dodavanje objektnog cvora za set unutar tabele simbola
-//			Struct setType = new Struct(Struct.Interface);
-//			Obj setObj = Tab.insert(Obj.Type, "set", setType);
-//			setObj.setAdr(-1);
-//			setObj.setLevel(-1);
-
             // Prepravka formalnih parametara ugradjenih metoda
 
 
@@ -75,7 +66,17 @@ public class Compiler {
 			Tab.dump();
 			
             if (!parser.errorDetected && semAnalyzer.passed()) {
-                log.info("Parsiranje uspesno zavrseno");
+                /* Generisanje koda */
+                File objFile = new File("test/program.obj");
+                if(objFile.exists()) objFile.delete();
+
+                CodeGenerator codeGen = new CodeGenerator();
+                prog.traverseBottomUp(codeGen);
+                Code.dataSize = semAnalyzer.nVars;
+                Code.mainPc = codeGen.getMainPC();
+                Code.write(new FileOutputStream(objFile));
+
+                log.info("Generisanje uspesno zavrseno");
             } else {
                 log.error("Parsiranje NIJE uspesno zavrseno");
             }

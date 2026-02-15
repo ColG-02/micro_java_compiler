@@ -1,11 +1,8 @@
 program Temp
 
+enum Broj {jedan, dva}
 {
-    void main ()
-        char c;
-    {
-        print(ord(c));      // defined but pars weren't counted properly
-        print(foo(c));      // not defined at all
+    void main() Broj b; {
+        b = 6;
     }
-
 }

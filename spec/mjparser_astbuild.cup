@@ -63,14 +63,12 @@ nonterminal MethodDeclList MethodDeclList;
 nonterminal MethodDecl MethodDecl;
 nonterminal ConstDeclSingle ConstDeclSingle;
 nonterminal ConstDeclMore ConstDeclMore;
-nonterminal Type Type;
 nonterminal Constant Constant;
 nonterminal VarDeclSingle VarDeclSingle;
 nonterminal VarDeclMore VarDeclMore;
 nonterminal EnumDeclName EnumDeclName;
 nonterminal EnumDeclSingle EnumDeclSingle;
 nonterminal EnumDeclMore EnumDeclMore;
-nonterminal MethRetAndName MethRetAndName;
 nonterminal FormParOpt FormParOpt;
 nonterminal VarDeclList VarDeclList;
 nonterminal StatementList StatementList;
@@ -100,6 +98,9 @@ nonterminal SwitchNonterm SwitchNonterm;
 nonterminal rs.etf.pp1.symboltable.concepts.Struct Factor, FactorSub, MulopFactorList, Term, AddopTermList, RelExpr, Expr;
 nonterminal rs.etf.pp1.symboltable.concepts.Obj Designator, DesignatorArrayName;
 nonterminal rs.etf.pp1.symboltable.concepts.Struct Condition, CondTermList, CondTerm, CondFactList, CondFact;
+
+nonterminal rs.etf.pp1.symboltable.concepts.Obj MethRetAndName;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct Type;
 
 
 precedence left ELSE;

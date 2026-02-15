@@ -54,8 +54,8 @@ terminal String IDENT;
 
 
 nonterminal Program, ProgramName, ConstVarEnumDeclList, ConstDecl, VarDecl, EnumDecl, MethodDeclList, MethodDecl;
-nonterminal ConstDeclSingle, ConstDeclMore, Type, Constant, VarDeclSingle, VarDeclMore, EnumDeclName, EnumDeclSingle, EnumDeclMore;
-nonterminal MethRetAndName, FormParOpt, VarDeclList, StatementList, FormPars, Statement, FormParSingle, FormParMore;
+nonterminal ConstDeclSingle, ConstDeclMore, Constant, VarDeclSingle, VarDeclMore, EnumDeclName, EnumDeclSingle, EnumDeclMore;
+nonterminal FormParOpt, VarDeclList, StatementList, FormPars, Statement, FormParSingle, FormParMore;
 nonterminal DesignatorStatement, ElseStmt, CaseList, Case, DesignatorStatementOpt, ConditionOpt;
 nonterminal Assignop, ActParsOpt, ActPars, ActParSingle, ActParMore, ActParListBegin;
 nonterminal Addop, Relop, Mulop, Unary, ForNonterm, SwitchNonterm;
@@ -63,6 +63,9 @@ nonterminal Addop, Relop, Mulop, Unary, ForNonterm, SwitchNonterm;
 nonterminal rs.etf.pp1.symboltable.concepts.Struct Factor, FactorSub, MulopFactorList, Term, AddopTermList, RelExpr, Expr;
 nonterminal rs.etf.pp1.symboltable.concepts.Obj Designator, DesignatorArrayName;
 nonterminal rs.etf.pp1.symboltable.concepts.Struct Condition, CondTermList, CondTerm, CondFactList, CondFact;
+
+nonterminal rs.etf.pp1.symboltable.concepts.Obj MethRetAndName;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct Type;
 
 
 precedence left ELSE;

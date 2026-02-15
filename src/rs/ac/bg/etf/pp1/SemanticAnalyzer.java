@@ -31,7 +31,7 @@ public class SemanticAnalyzer extends VisitorAdaptor {
     private int enumValCnt = 0;
     private Set<Integer> caseSet = new HashSet<>();
     private Set<Integer> enumValueSet = new HashSet<>();
-
+    int nVars;
 
 
     public void report_error(String message, SyntaxNode info) {
@@ -67,6 +67,7 @@ public class SemanticAnalyzer extends VisitorAdaptor {
 
 	@Override
 	public void visit(Program program) {
+        nVars = Tab.currentScope().getnVars();
 		Tab.chainLocalSymbols(currentProgram);
 		Tab.closeScope();
         currentProgram = null;
@@ -119,6 +120,7 @@ public class SemanticAnalyzer extends VisitorAdaptor {
 
         if(varObj == null || varObj == Tab.noObj){
             varObj = Tab.insert(Obj.Var, varDeclSingle.getI1(), currentType);
+//            varObj.setLevel(2);
         }
         else{
             report_error("Dvostruka definicija promenljive: " + varDeclSingle.getI1(), varDeclSingle);
@@ -134,6 +136,7 @@ public class SemanticAnalyzer extends VisitorAdaptor {
         else varObj = Tab.currentScope.findSymbol(varDeclArray.getI1());
         if(varObj == null  || varObj == Tab.noObj){
             varObj = Tab.insert(Obj.Var, varDeclArray.getI1(), new Struct(Struct.Array, currentType));
+//            varObj.setLevel(2);
         }
         else{
             report_error("Dvostruka definicija promenljive: " + varDeclArray.getI1(), varDeclArray);
@@ -209,7 +212,7 @@ public class SemanticAnalyzer extends VisitorAdaptor {
     // Method Declarations
     @Override
     public void visit(MethRetAndName_void methodNameVoid){
-        currentMethod = Tab.insert(Obj.Meth, methodNameVoid.getI1(), Tab.noType);
+        methodNameVoid.obj = currentMethod = Tab.insert(Obj.Meth, methodNameVoid.getI1(), Tab.noType);
         Tab.openScope();
         if(methodNameVoid.getI1().equalsIgnoreCase("main")) mainMethod = currentMethod;
 //        report_info("Koriscenje globalne funkcije: " + methodNameVoid.getI1(), methodNameVoid);
@@ -270,23 +273,21 @@ public class SemanticAnalyzer extends VisitorAdaptor {
 		Obj typeObj = Tab.find(type.getI1());
 		if(typeObj == Tab.noObj) {
 			report_error("Nepostojeci tip podatka: " + type.getI1(), type);
-			currentType = Tab.noType;
+			type.struct = currentType = Tab.noType;
             return;
 		}
 		else if(typeObj.getKind() != Obj.Type) {
 			report_error("Neadekvatan tip podatka: " + type.getI1(), type);
-			currentType = Tab.noType;
+            type.struct = currentType = Tab.noType;
             return;
 		}
 		else {
-//			currentType = typeObj.getType(); OLD
             Struct t = typeObj.getType();
-
             // Enum se koristi kao "namespace"; konstante su int, pa i tip tretiramo kao int
             if (t != null && t.getKind() == Struct.Enum) {
-                currentType = Tab.intType;
+                type.struct = currentType = Tab.intType;
             } else {
-                currentType = t;
+                type.struct = currentType = t;
             }
 		}
 	}
@@ -488,14 +489,6 @@ public class SemanticAnalyzer extends VisitorAdaptor {
 
             designatorIdent.obj = found;
             return;
-
-//        else if (Tab.currentScope().findSymbol(designatorIdent.getI2()) == Tab.noObj) {
-//            report_error("Element niza ne postoji [Designator_ident]", designatorIdent);
-//            designatorIdent.obj = Tab.noObj;
-//        }
-//        else{
-//            designatorIdent.obj = new Obj(Obj.Elem, arrObj.getName() + ".length", arrObj.getType());
-//        }
         }
     }
 

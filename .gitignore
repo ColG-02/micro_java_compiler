@@ -49,3 +49,6 @@ src/**/sym.java
 
 ### Generated AST nodes ###
 src/**/ast/*.java
+
+### Generated .obj files ###
+test/*.obj
