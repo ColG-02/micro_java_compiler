@@ -1,6 +1,8 @@
 package rs.ac.bg.etf.pp1;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
@@ -53,10 +55,14 @@ public class Compiler {
 			Obj boolObj = Tab.insert(Obj.Type, "bool", boolType);
 			boolObj.setAdr(-1);
 			boolObj.setLevel(-1);
-
             // Prepravka formalnih parametara ugradjenih metoda
-
-
+            List<String> uniMeths = new ArrayList<String>();
+            uniMeths.add("chr");
+            uniMeths.add("ord");
+            uniMeths.add("len");
+            for(String meth : uniMeths)
+                for(Obj fp : Tab.find(meth).getLocalSymbols())
+                    fp.setFpPos(1);
 			// Semanticka analiza
 			SemanticAnalyzer semAnalyzer = new SemanticAnalyzer();
 			prog.traverseBottomUp(semAnalyzer);

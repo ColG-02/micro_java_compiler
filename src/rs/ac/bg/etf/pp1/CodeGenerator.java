@@ -4,6 +4,7 @@ import rs.ac.bg.etf.pp1.ast.*;
 import rs.etf.pp1.mj.runtime.Code;
 import rs.etf.pp1.symboltable.Tab;
 import rs.etf.pp1.symboltable.concepts.Obj;
+import rs.etf.pp1.symboltable.concepts.Struct;
 
 import java.util.*;
 
@@ -16,6 +17,34 @@ public class CodeGenerator extends VisitorAdaptor {
         return mainPC;
     }
 
+    private void initializePredeclaredMethods() {
+        // 'ord' and 'chr' are the same code.
+        Obj ordMethod = Tab.find("ord");
+        Obj chrMethod = Tab.find("chr");
+        ordMethod.setAdr(Code.pc);
+        chrMethod.setAdr(Code.pc);
+        Code.put(Code.enter);
+        Code.put(1);
+        Code.put(1);
+        Code.put(Code.load_n);
+        Code.put(Code.exit);
+        Code.put(Code.return_);
+
+        Obj lenMethod = Tab.find("len");
+        lenMethod.setAdr(Code.pc);
+        Code.put(Code.enter);
+        Code.put(1);
+        Code.put(1);
+        Code.put(Code.load_n);
+        Code.put(Code.arraylength);
+        Code.put(Code.exit);
+        Code.put(Code.return_);
+
+    }
+
+    CodeGenerator() {
+        this.initializePredeclaredMethods();
+    }
 
 
     // Method Declarations
@@ -49,6 +78,12 @@ public class CodeGenerator extends VisitorAdaptor {
 
     @Override
     public void visit(Statement_return1 statementReturn1){
+        Code.put(Code.exit);
+        Code.put(Code.return_);
+    }
+
+    @Override
+    public void visit(Statement_return2 statementReturn2) {
         Code.put(Code.exit);
         Code.put(Code.return_);
     }
@@ -384,6 +419,30 @@ public class CodeGenerator extends VisitorAdaptor {
 
     // Expr Declarations
 
+    Stack<Integer> ternFalseFix = new Stack<>();
+    Stack<Integer> ternEndFix = new Stack<>();
+
+    @Override
+    public void visit(TernAfterCond ternAfterCond) {
+        // Condition je upravo završio i gurnuo false-jump u skipThen (kao u if-u)
+        int falseAdr = skipThen.pop();
+        ternFalseFix.push(falseAdr);
+    }
+
+    @Override
+    public void visit(TernAfterThen ternAfterThen) {
+        // Kad završi THEN expr, preskoči ELSE
+        Code.putJump(0);
+        ternEndFix.push(Code.pc - 2);
+        // Fix false iz Condition-a da skoči na početak ELSE expr (ovo mesto)
+        Code.fixup(ternFalseFix.pop());
+    }
+
+    @Override
+    public void visit(Expr_cond exprCond) {
+        Code.fixup(ternEndFix.pop());
+    }
+
     @Override
     public void visit(AddopTermList_add addopTermListAdd){
         if(addopTermListAdd.getAddop() instanceof Addop_plus)
@@ -412,6 +471,9 @@ public class CodeGenerator extends VisitorAdaptor {
 
     @Override
     public void visit(FactorSub_var factorSubVar){
+        if (factorSubVar.getDesignator() instanceof Designator_len) {
+            return;
+        }
         Code.load(factorSubVar.getDesignator().obj);
     }
 
@@ -456,7 +518,21 @@ public class CodeGenerator extends VisitorAdaptor {
 
     @Override
     public void visit(DesignatorArrayName  designatorArrayName){
-        Code.load(designatorArrayName.obj);
+        Obj o = designatorArrayName.obj;
+
+        // Ako je Enum tip (kvalifikator u EnumName.CONST), NE sme da se load-uje
+        if (o != null && o.getKind() == Obj.Type
+                && o.getType() != null
+                && o.getType().getKind() == Struct.Enum) {
+            return;
+        }
+
+        Code.load(o);
+    }
+
+    @Override
+    public void visit(Designator_len designatorLen){
+        Code.put(Code.arraylength);
     }
 
 }

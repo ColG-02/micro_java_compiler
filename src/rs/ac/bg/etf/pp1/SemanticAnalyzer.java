@@ -444,7 +444,7 @@ public class SemanticAnalyzer extends VisitorAdaptor {
     public void visit(Designator_var designatorVar){
         Obj varObj = Tab.find(designatorVar.getI1());
         if(varObj == Tab.noObj) {
-            report_error("Pristup nedefinisanoj promenljivi: ",  designatorVar);
+            report_error("Pristup nedefinisanoj promenljivi: [Designator_var]",  designatorVar);
             designatorVar.obj = Tab.noObj;
         }
         else if(varObj.getKind() != Obj.Var && varObj.getKind() != Obj.Con && varObj.getKind() != Obj.Meth) {
@@ -460,9 +460,10 @@ public class SemanticAnalyzer extends VisitorAdaptor {
     public void visit(Designator_ident designatorIdent){    // (ENUM VREDNOST) PROVERI
         Obj arrObj = designatorIdent.getDesignatorArrayName().obj;
         String memberName = designatorIdent.getI2();
-        if(arrObj == Tab.noObj)
+        if(arrObj == Tab.noObj) {
+            report_error("Pristup nedefinisanoj promenljivi: [Designator_ident]",  designatorIdent);
             designatorIdent.obj = Tab.noObj;
-
+        }
         // EnumName.CONST
         if (arrObj.getKind() == Obj.Type && arrObj.getType() != null && arrObj.getType().getKind() == Struct.Enum) {
             Obj found = null;
@@ -497,6 +498,7 @@ public class SemanticAnalyzer extends VisitorAdaptor {
     public void visit(Designator_len designatorLen){    // PROVERI
         Obj arrObj = designatorLen.getDesignatorArrayName().obj;
         if(arrObj == Tab.noObj) {
+            report_error("Pristup nedefinisanoj promenljivi: [Designator_len]",  designatorLen);
             designatorLen.obj = Tab.noObj;
             return;
         }
@@ -506,7 +508,7 @@ public class SemanticAnalyzer extends VisitorAdaptor {
             return;
         }
         else{
-            designatorLen.obj = new Obj(Obj.Elem, arrObj.getName() + ".length", Tab.intType);
+            designatorLen.obj = new Obj(Obj.Var, arrObj.getName() + ".length", Tab.intType);
         }
     }
 
@@ -515,6 +517,7 @@ public class SemanticAnalyzer extends VisitorAdaptor {
         Obj arrObj = designatorElem.getDesignatorArrayName().obj;
         Struct idxType = designatorElem.getExpr().struct;
         if(arrObj == Tab.noObj) {
+            report_error("Pristup nedefinisanoj promenljivi: [Designator_elem]",  designatorElem);
             designatorElem.obj = Tab.noObj;
             return;
         }

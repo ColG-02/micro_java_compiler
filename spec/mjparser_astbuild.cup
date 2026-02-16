@@ -107,6 +107,8 @@ nonterminal SwitchStart SwitchStart;
 nonterminal ForCondStart ForCondStart;
 nonterminal ForStepStart ForStepStart;
 nonterminal ForBodyStart ForBodyStart;
+nonterminal TernAfterCond TernAfterCond;
+nonterminal TernAfterThen TernAfterThen;
 
 precedence left ELSE;
 
@@ -320,7 +322,11 @@ CondFact ::= (CondFact_expr) RelExpr:R1 {: RESULT=new CondFact_expr(R1); RESULT.
 
 Expr ::= (Expr_base) RelExpr:R1 {: RESULT=new Expr_base(R1); RESULT.setLine(R1left); :}
          |
-         (Expr_cond) Condition:C1 QUESTION Expr:E2 COLON Expr:E3 {: RESULT=new Expr_cond(C1, E2, E3); RESULT.setLine(C1left); :};
+         (Expr_cond) Condition:C1 TernAfterCond:T2 QUESTION Expr:E3 TernAfterThen:T4 COLON Expr:E5 {: RESULT=new Expr_cond(C1, T2, E3, T4, E5); RESULT.setLine(C1left); :};
+
+TernAfterCond ::= (TernAfterCond) {: RESULT=new TernAfterCond(); :} /* epsilon */;
+
+TernAfterThen ::= (TernAfterThen) {: RESULT=new TernAfterThen(); :} /* epsilon */;
 
 RelExpr ::= (RelExpr_add) AddopTermList:A1 {: RESULT=new RelExpr_add(A1); RESULT.setLine(A1left); :};
 

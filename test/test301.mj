@@ -14,7 +14,6 @@ char nizch[];
 int a;
 	
 {
-    char ord(char c) {return c;}    // THIS LINE ADDED
 
 	void main()	
 		int bodovi;

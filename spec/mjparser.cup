@@ -67,6 +67,7 @@ nonterminal rs.etf.pp1.symboltable.concepts.Struct Condition, CondTermList, Cond
 nonterminal rs.etf.pp1.symboltable.concepts.Obj MethRetAndName;
 nonterminal rs.etf.pp1.symboltable.concepts.Struct Type;
 nonterminal Else, PrepareCase, SwitchStart, ForCondStart, ForStepStart, ForBodyStart;
+nonterminal TernAfterCond, TernAfterThen;
 
 precedence left ELSE;
 
@@ -280,7 +281,11 @@ CondFact ::= (CondFact_expr) RelExpr
 
 Expr ::= (Expr_base) RelExpr
          |
-         (Expr_cond) Condition QUESTION Expr COLON Expr;
+         (Expr_cond) Condition TernAfterCond QUESTION Expr TernAfterThen COLON Expr;
+
+TernAfterCond ::= (TernAfterCond) /* epsilon */;
+
+TernAfterThen ::= (TernAfterThen) /* epsilon */;
 
 RelExpr ::= (RelExpr_add) AddopTermList;
 
