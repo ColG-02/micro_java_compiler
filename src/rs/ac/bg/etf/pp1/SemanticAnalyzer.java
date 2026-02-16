@@ -71,7 +71,8 @@ public class SemanticAnalyzer extends VisitorAdaptor {
 		Tab.chainLocalSymbols(currentProgram);
 		Tab.closeScope();
         currentProgram = null;
-        if(mainMethod == null || mainMethod.getLevel() > 0) report_error("Program nema adekvatnu main metodu", program);
+        if(mainMethod == null || mainMethod.getLevel() > 0)
+            report_error("Program nema adekvatnu main metodu", program);
 	}
 
     // Const Declarations
@@ -220,7 +221,7 @@ public class SemanticAnalyzer extends VisitorAdaptor {
 
     @Override
     public void visit(MethRetAndName_type methodNameType){
-        currentMethod = Tab.insert(Obj.Meth, methodNameType.getI2(), currentType);
+        methodNameType.obj = currentMethod = Tab.insert(Obj.Meth, methodNameType.getI2(), currentType);
         Tab.openScope();
 //        report_info("Koriscenje globalne funkcije: " + methodNameType.getI2(), methodNameType);
     }

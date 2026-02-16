@@ -66,7 +66,7 @@ nonterminal rs.etf.pp1.symboltable.concepts.Struct Condition, CondTermList, Cond
 
 nonterminal rs.etf.pp1.symboltable.concepts.Obj MethRetAndName;
 nonterminal rs.etf.pp1.symboltable.concepts.Struct Type;
-
+nonterminal Else, PrepareCase, SwitchStart, ForCondStart, ForStepStart, ForBodyStart;
 
 precedence left ELSE;
 
@@ -189,25 +189,36 @@ Statement ::= (Statement_ds) DesignatorStatement SEMI
 			  |
 			  (Statement_print2) PRINT LPARENT Expr COMMA NUMBER RPARENT SEMI
 			  |
-			  (Statement_switch) SwitchNonterm LPARENT Expr RPARENT LBRACE CaseList RBRACE
+			  (Statement_switch) SwitchNonterm LPARENT Expr RPARENT SwitchStart LBRACE CaseList RBRACE
               |
-              (Statement_for) ForNonterm LPARENT DesignatorStatementOpt SEMI ConditionOpt SEMI DesignatorStatementOpt RPARENT Statement
+              (Statement_for) ForNonterm LPARENT DesignatorStatementOpt SEMI ForCondStart ConditionOpt
+                SEMI ForStepStart DesignatorStatementOpt RPARENT ForBodyStart Statement
               |
               (Statement_list) LBRACE StatementList RBRACE;
 
 ForNonterm ::= (ForNonterm) FOR;
 
+ForCondStart ::= (ForCondStart) /* epsilon */ ;
+ForStepStart ::= (ForStepStart) /* epsilon */ ;
+ForBodyStart ::= (ForBodyStart) /* epsilon */ ;
+
 SwitchNonterm ::= (SwitchNonterm) SWITCH;
 
-ElseStmt ::= (ElseStmt_yes) ELSE Statement
+SwitchStart ::= (SwitchStart) /* epsilon */ ;
+
+ElseStmt ::= (ElseStmt_yes) Else Statement
 			 |
 			 (ElseStmt_no) /* epsilon */;
+
+Else ::= (Else) ELSE;
 
 CaseList ::= (CaseList_case) CaseList Case
              |
              (CaseList_e) /*epsilon*/;
 
-Case ::= (Case) CASE NUMBER COLON StatementList;
+PrepareCase ::= (PrepareCase) /* epsilon */;
+
+Case ::= (Case) CASE NUMBER COLON PrepareCase StatementList;
 
 DesignatorStatementOpt ::= (DesignatorStatementOpt_stmt) DesignatorStatement
                            |
